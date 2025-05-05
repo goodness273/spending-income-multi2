@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "737005580488",
+    "project_id": "spending-income-tracker",
+    "storage_bucket": "spending-income-tracker.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:737005580488:android:a16481ea85f6e3ab2475fd",
+        "android_client_info": {
+          "package_name": "com.example.spending_income"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "737005580488-l0lnp0p9l7oki0116jb3t105m4bqlao4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDuwnWpczjEUJ_D67D7lJzgBzSkFjPOveU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "737005580488-l0lnp0p9l7oki0116jb3t105m4bqlao4.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "737005580488-6vkg03g1bhhse7rlr2uai8fdtmrhrqu7.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.spendingIncome"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
