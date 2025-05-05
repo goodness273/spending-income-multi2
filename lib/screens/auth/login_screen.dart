@@ -21,6 +21,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _isLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
+  bool _isGoogleLoading = false; // Loading state for Google
+  bool _isAppleLoading = false;  // Loading state for Apple
 
   @override
   void dispose() {
@@ -32,7 +34,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (_formKey.currentState!.validate()) {
       setState(() {
-        _isLoading = true;
+        _isLoading = true; // Loading state for email/password
         _errorMessage = null;
       });
 
@@ -42,7 +44,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
-        // On success, AuthWrapper will handle navigation
+        // On success, AuthWrapper handles navigation
       } catch (e) {
         if (mounted) {
           setState(() {
@@ -55,6 +57,65 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             _isLoading = false;
           });
         }
+      }
+    }
+  }
+
+  // --- Google Sign In Handler ---
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      await authNotifier.signInWithGoogle();
+      // On success, AuthWrapper handles navigation
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = AuthErrorHandler.handleError(e);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
+  // --- Apple Sign In Handler ---
+  Future<void> _signInWithApple() async {
+    // Important: Apple Sign In only works on iOS/macOS physical devices or simulators
+    // and requires additional setup in Xcode and Apple Developer Portal.
+    if (!Platform.isIOS && !Platform.isMacOS) {
+       ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Apple Sign-In is only available on iOS and macOS.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isAppleLoading = true;
+      _errorMessage = null;
+    });
+    try {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      await authNotifier.signInWithApple();
+      // On success, AuthWrapper handles navigation
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = AuthErrorHandler.handleError(e);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAppleLoading = false;
+        });
       }
     }
   }
@@ -248,13 +309,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       padding: const EdgeInsets.only(bottom: 16.0),
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          color:
-                              isDark
-                                  ? Colors.red.shade300
-                                  : Colors.red.shade700,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
                         textAlign: TextAlign.center,
                       ),
                     ),
@@ -314,43 +369,46 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       // Google Sign In Button
                       OutlinedButton(
-                        onPressed: () {
-                          // TODO: Implement Google Sign In
-                          print('Google Sign In tapped');
-                          // ref.read(authNotifierProvider.notifier).signInWithGoogle();
-                        },
-                        style: AppTheme.getSecondaryButtonStyle(
-                          context,
-                        ), // Use secondary style
-                        child: Image.asset(
-                          'assets/images/google_logo.png', // TODO: Add google logo asset
-                          height: 24.0,
-                          width: 24.0,
-                        ),
+                        onPressed: _isGoogleLoading || _isAppleLoading ? null : _signInWithGoogle,
+                        style: AppTheme.getOutlinedSocialButtonStyle(context),
+                        child: _isGoogleLoading
+                            ? const SizedBox(
+                                height: 24.0,
+                                width: 24.0,
+                                child: CircularProgressIndicator(strokeWidth: 2.0),
+                              )
+                            : Image.asset('assets/images/google_logo.png', height: 24),
                       ),
                       const SizedBox(width: 16),
 
                       // Apple Sign In Button (Only show on iOS/macOS)
                       if (Platform.isIOS || Platform.isMacOS)
                         OutlinedButton(
-                          onPressed: () {
-                            // TODO: Implement Apple Sign In
-                            print('Apple Sign In tapped');
-                            // ref.read(authNotifierProvider.notifier).signInWithApple();
-                          },
-                          style: AppTheme.getSecondaryButtonStyle(
-                            context,
-                          ).copyWith(
-                            // Optional: Slightly different style for Apple?
-                            foregroundColor: MaterialStateProperty.all(
-                              AppTheme.getPrimaryTextColor(isDark),
-                            ),
+                          onPressed: _isGoogleLoading || _isAppleLoading ? null : _signInWithApple,
+                          style: AppTheme.getOutlinedSocialButtonStyle(context).copyWith(
+                             backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                                return Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
+                             }),
+                             foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                                return Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white;
+                             }),
                           ),
-                          child: Icon(
-                            Icons.apple, // Use Apple icon
-                            size: 28.0, // Slightly larger icon
-                            color: AppTheme.getPrimaryTextColor(isDark),
-                          ),
+                          child: _isAppleLoading
+                              ? SizedBox(
+                                  height: 24.0,
+                                  width: 24.0,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.apple, // Using a generic Apple icon
+                                  size: 28, // Slightly larger to match visual weight
+                                  color: Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white,
+                                ),
                         ),
                     ],
                   ),

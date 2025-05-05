@@ -21,6 +21,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   bool _isLoading = false;
+  bool _isGoogleLoading = false;
+  bool _isAppleLoading = false;
   String? _errorMessage;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
@@ -65,6 +67,63 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             _isLoading = false;
           });
         }
+      }
+    }
+  }
+
+  Future<void> _signUpWithGoogle() async {
+    setState(() {
+      _isGoogleLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      await authNotifier.signInWithGoogle();
+      // On success, AuthWrapper handles navigation
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = AuthErrorHandler.handleError(e);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isGoogleLoading = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _signUpWithApple() async {
+    if (!Platform.isIOS && !Platform.isMacOS) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Apple Sign-In is only available on iOS and macOS.')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isAppleLoading = true;
+      _errorMessage = null;
+    });
+    
+    try {
+      final authNotifier = ref.read(authNotifierProvider.notifier);
+      await authNotifier.signInWithApple();
+      // On success, AuthWrapper handles navigation
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _errorMessage = AuthErrorHandler.handleError(e);
+        });
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAppleLoading = false;
+        });
       }
     }
   }
@@ -291,47 +350,41 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Error message
                   if (_errorMessage != null)
                     Padding(
-                      padding: const EdgeInsets.only(bottom: 16.0),
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          color:
-                              isDark
-                                  ? Colors.red.shade300
-                                  : Colors.red.shade700,
-                          fontSize: 14,
-                        ),
+                        style: TextStyle(color: Theme.of(context).colorScheme.error),
                         textAlign: TextAlign.center,
                       ),
                     ),
+                  const SizedBox(height: 24),
 
-                  // Sign up Button
+                  // Sign Up Button
                   SizedBox(
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _register,
-                      style: AppTheme.getPrimaryButtonStyle(
-                        context,
-                      ), // Use theme style
-                      child:
-                          _isLoading
-                              ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : const Text(
-                                'Sign up',
-                                style: TextStyle(fontWeight: FontWeight.w500),
+                      style: AppTheme.getPrimaryButtonStyle(context), // Use theme primary style
+                      child: _isLoading
+                          ? const SizedBox(
+                              width: 24, // Consistent size
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: Colors.white, // Ensure contrast on primary button
+                                strokeWidth: 2,
                               ),
+                            )
+                          : Text(
+                              'Sign up', // Match button text to inspiration
+                              style: AppTheme.getBodyStyle(isDark).copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+                              ),
+                            ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 24,
-                  ), // Spacing before social/login link
+                  const SizedBox(height: 24),
+
                   // --- Social Register Divider and Buttons ---
                   Row(
                     children: [
@@ -356,30 +409,28 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       // Google Sign In Button
                       OutlinedButton(
-                        onPressed: () {
-                          // TODO: Implement Google Sign Up/Link
-                          print('Google Sign Up tapped');
-                          // ref.read(authNotifierProvider.notifier).signInWithGoogle(); // Might need different logic for register
-                        },
+                        onPressed: _isGoogleLoading || _isAppleLoading ? null : _signUpWithGoogle,
                         style: AppTheme.getSecondaryButtonStyle(
                           context,
                         ), // Use secondary style
-                        child: Image.asset(
-                          'assets/images/google_logo.png', // Reuse logo asset
-                          height: 24.0,
-                          width: 24.0,
-                        ),
+                        child: _isGoogleLoading
+                            ? const SizedBox(
+                                height: 24.0,
+                                width: 24.0,
+                                child: CircularProgressIndicator(strokeWidth: 2.0),
+                              )
+                            : Image.asset(
+                                'assets/images/google_logo.png', // Reuse logo asset
+                                height: 24.0,
+                                width: 24.0,
+                              ),
                       ),
                       const SizedBox(width: 16),
 
                       // Apple Sign In Button (Only show on iOS/macOS)
                       if (Platform.isIOS || Platform.isMacOS)
                         OutlinedButton(
-                          onPressed: () {
-                            // TODO: Implement Apple Sign Up/Link
-                            print('Apple Sign Up tapped');
-                            // ref.read(authNotifierProvider.notifier).signInWithApple(); // Might need different logic
-                          },
+                          onPressed: _isGoogleLoading || _isAppleLoading ? null : _signUpWithApple,
                           style: AppTheme.getSecondaryButtonStyle(
                             context,
                           ).copyWith(
@@ -387,11 +438,22 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               AppTheme.getPrimaryTextColor(isDark),
                             ),
                           ),
-                          child: Icon(
-                            Icons.apple,
-                            size: 28.0,
-                            color: AppTheme.getPrimaryTextColor(isDark),
-                          ),
+                          child: _isAppleLoading
+                              ? SizedBox(
+                                  height: 24.0,
+                                  width: 24.0,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.0,
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      AppTheme.getPrimaryTextColor(isDark),
+                                    ),
+                                  ),
+                                )
+                              : Icon(
+                                  Icons.apple,
+                                  size: 28.0,
+                                  color: AppTheme.getPrimaryTextColor(isDark),
+                                ),
                         ),
                     ],
                   ),

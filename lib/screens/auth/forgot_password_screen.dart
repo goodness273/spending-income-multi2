@@ -170,23 +170,23 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _resetPassword,
-                      style: AppTheme.getPrimaryButtonStyle(
-                        context,
-                      ), // Use theme style
-                      child:
-                          _isLoading
-                              ? const SizedBox(
-                                width: 24,
-                                height: 24,
-                                child: CircularProgressIndicator(
-                                  color: Colors.white,
-                                  strokeWidth: 2,
-                                ),
-                              )
-                              : const Text(
-                                'Send code',
-                                style: TextStyle(fontWeight: FontWeight.w500),
-                              ), // Match inspiration text
+                      style: AppTheme.getPrimaryButtonStyle(context),
+                      child: _isLoading
+                          ? SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                color: isDark ? AppTheme.primaryBlack : AppTheme.white, // Ensure correct contrast
+                                strokeWidth: 2,
+                              ),
+                            )
+                          : Text(
+                              'Send link', // Match inspiration text
+                              style: AppTheme.getBodyStyle(isDark).copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 24), // Spacing before login link

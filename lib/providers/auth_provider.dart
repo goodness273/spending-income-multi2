@@ -100,51 +100,30 @@ class AuthNotifier extends StateNotifier<AuthState> {
     try {
       state = AuthState.authenticating;
       print('[AuthNotifier] Attempting Google Sign In...');
-      // TODO: Call _authService.signInWithGoogle() when implemented
-      // final user = await _authService.signInWithGoogle();
-      // Simulating success for now, replace with actual call
-      await Future.delayed(const Duration(seconds: 1)); // Simulate network delay
-      // Assume success for UI flow, actual implementation needed
-      // If _authService returns a user, set state to authenticated
-      // state = AuthState.authenticated;
-      // return user; 
-
-      // Simulate failure for now
-      throw Exception('Google Sign-In not implemented yet');
-
+      final user = await _authService.signInWithGoogle();
+      state = AuthState.authenticated;
+      return user;
     } catch (e) {
       print('[AuthNotifier] Google Sign In Error: $e');
-      state = AuthState.error;
-      // Consider rethrowing a more specific error or handling it
-      rethrow; 
-    }
-  }
-
-  // --- Placeholder: Sign in with Apple ---
-   Future<UserModel?> signInWithApple() async {
-    try {
-      state = AuthState.authenticating;
-       print('[AuthNotifier] Attempting Apple Sign In...');
-      // TODO: Call _authService.signInWithApple() when implemented
-      // final user = await _authService.signInWithApple();
-      // Simulating success for now, replace with actual call
-      await Future.delayed(const Duration(seconds: 1));
-       // Assume success for UI flow, actual implementation needed
-      // if (user != null) {
-      //   state = AuthState.authenticated;
-      // }
-      // return user; 
-
-      // Simulate failure for now
-       throw Exception('Apple Sign-In not implemented yet');
-
-    } catch (e) {
-       print('[AuthNotifier] Apple Sign In Error: $e');
       state = AuthState.error;
       rethrow;
     }
   }
 
+  // --- Placeholder: Sign in with Apple ---
+  Future<UserModel?> signInWithApple() async {
+    try {
+      state = AuthState.authenticating;
+      print('[AuthNotifier] Attempting Apple Sign In...');
+      final user = await _authService.signInWithApple();
+      state = AuthState.authenticated;
+      return user;
+    } catch (e) {
+      print('[AuthNotifier] Apple Sign In Error: $e');
+      state = AuthState.error;
+      rethrow;
+    }
+  }
 }
 
 // Auth notifier provider

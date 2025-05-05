@@ -248,17 +248,39 @@ class AppTheme {
       backgroundColor: Colors.transparent, // No background
       foregroundColor: getPrimaryTextColor(
         isDark,
-      ), // Black (light), White (dark) text/icon
-      minimumSize: const Size(52, 52), // Square-ish size for icons
+      ), // Text/icon color matches primary text
+      minimumSize: const Size(56, 56), // Make it squarish
+      maximumSize: const Size(64, 64),
       side: BorderSide(
-        color: getDividerColor(isDark),
-        width: 1,
-      ), // Border color
+        color: getDividerColor(isDark), // Border color matches divider
+        width: 1.5, // Slightly thicker border maybe?
+      ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-      ), // Keep radius
+      ), // Match other radius
+      padding: const EdgeInsets.all(12),
       elevation: 0,
-      padding: const EdgeInsets.all(12), // Padding for icon
+    );
+  }
+
+  // --- New Style for Social Buttons ---
+  static ButtonStyle getOutlinedSocialButtonStyle(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return OutlinedButton.styleFrom(
+      backgroundColor: Colors.transparent, // No background fill
+      foregroundColor: getPrimaryTextColor(isDark), // Icon color
+      minimumSize: const Size(60, 60), // Fixed square size
+      maximumSize: const Size(60, 60),
+      padding: EdgeInsets.zero, // Let the icon/image determine padding implicitly
+      side: BorderSide(
+        color: getDividerColor(isDark), // Use divider color for border
+        width: 1,
+      ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16), // Slightly more rounded corners for social icons
+      ),
+      elevation: 0,
+      tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Minimize tap area outside button
     );
   }
 

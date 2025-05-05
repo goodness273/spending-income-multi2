@@ -1,10 +1,14 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   // Get the current user
   User? get currentUser => _auth.currentUser;
@@ -98,6 +102,139 @@ class AuthService {
   Future<void> resetPassword(String email) async {
     return await _auth.sendPasswordResetEmail(email: email);
   }
+
+  // --- Sign in with Google ---
+  Future<UserModel> signInWithGoogle() async {
+    try {
+      // Trigger the authentication flow
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+      // Obtain the auth details from the request
+      if (googleUser == null) {
+        // User cancelled the sign-in
+        throw FirebaseAuthException(
+          code: 'USER_CANCELLED',
+          message: 'Google Sign-In was cancelled by the user.',
+        );
+      }
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      // Create a new credential
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Once signed in, return the UserCredential
+      UserCredential result = await _auth.signInWithCredential(credential);
+      User? user = result.user;
+
+      if (user != null) {
+        // Check if user exists in Firestore, otherwise create
+        DocumentSnapshot doc =
+            await _firestore.collection('users').doc(user.uid).get();
+
+        if (doc.exists) {
+          return UserModel.fromFirestore(doc);
+        } else {
+          // Create a new user document in Firestore
+          UserModel userModel = UserModel(
+            id: user.uid,
+            email: user.email ?? '', // Google provides email
+            displayName: user.displayName, // Google provides display name
+            // You might want to store the photoURL as well: user.photoURL
+          );
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(userModel.toMap());
+          return userModel;
+        }
+      } else {
+        throw Exception('Failed to sign in with Google');
+      }
+    } on FirebaseAuthException catch (e) {
+      // Handle specific Firebase Auth errors
+      print("Firebase Auth Error during Google Sign In: ${e.code} - ${e.message}");
+      rethrow;
+    } catch (e) {
+       print("General Error during Google Sign In: $e");
+      // Handle other errors (network issues, etc.)
+      rethrow;
+    }
+  }
+
+  // --- Sign in with Apple ---
+  Future<UserModel> signInWithApple() async {
+    try {
+       // Note: This requires additional platform setup (Xcode, Apple Dev Portal)
+       // It will likely only work on real iOS/macOS devices or simulators.
+      final AuthorizationCredentialAppleID appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+         // Add nonce for web if needed, requires crypto package
+        // webAuthenticationOptions: WebAuthenticationOptions(
+        //   clientId: 'YOUR_CLIENT_ID', // Your service ID from Apple Dev Portal
+        //   redirectUri: Uri.parse('YOUR_REDIRECT_URI'), // Configured in Firebase/Apple
+        // ),
+        // nonce: kIsWeb ? _createNonce() : null, // Nonce for web replay protection
+      );
+
+      final OAuthCredential credential = OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode, // Or identityToken, check docs
+        // rawNonce: kIsWeb ? _createNonce() : null, // If using nonce
+      );
+
+       // Sign in to Firebase with the credential
+      UserCredential result = await _auth.signInWithCredential(credential);
+       User? user = result.user;
+
+      if (user != null) {
+         // Check if user exists in Firestore, otherwise create
+        DocumentSnapshot doc =
+            await _firestore.collection('users').doc(user.uid).get();
+
+        if (doc.exists) {
+          return UserModel.fromFirestore(doc);
+        } else {
+          // Create a new user document in Firestore
+          // Apple only provides name/email on first sign-up
+          UserModel userModel = UserModel(
+            id: user.uid,
+            email: appleCredential.email ?? user.email ?? '', // Prioritize Apple provided email
+            displayName: appleCredential.givenName != null
+              ? '${appleCredential.givenName} ${appleCredential.familyName ?? ''}'.trim()
+              : user.displayName,
+             // You might want to store the photoURL as well: user.photoURL (often null for Apple)
+          );
+           await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(userModel.toMap());
+          return userModel;
+        }
+      } else {
+         throw Exception('Failed to sign in with Apple');
+      }
+    } on FirebaseAuthException catch (e) {
+       print("Firebase Auth Error during Apple Sign In: ${e.code} - ${e.message}");
+      rethrow;
+    } catch (e) {
+       print("General Error during Apple Sign In: $e");
+       // Handle specific Apple Sign In errors if needed
+      rethrow;
+    }
+  }
+
+  // Helper for creating nonce (example, requires crypto package)
+  // String _createNonce() {
+  //   final random = Random.secure();
+  //   return base64Url.encode(List<int>.generate(16, (_) => random.nextInt(256)));
+  // }
 
   // Get user data from Firestore
   Future<UserModel?> getUserData() async {
