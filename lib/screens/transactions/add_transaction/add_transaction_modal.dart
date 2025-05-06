@@ -21,12 +21,17 @@ class AddTransactionModal extends StatefulWidget {
     final result = await showModalBottomSheet<Transaction>(
       context: context,
       isScrollControlled: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      // Use FractionallySizedBox for consistent height
       builder: (context) => Padding(
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-        child: AddTransactionModal(onTransactionAdded: onTransactionAdded),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.75,
+          child: AddTransactionModal(onTransactionAdded: onTransactionAdded),
+        ),
       ),
     );
     
@@ -62,6 +67,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     super.initState();
     _loadLastUsedMethod();
     _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    
+    // Initialize AI chat messages
+    _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
   }
 
   Future<void> _loadLastUsedMethod() async {
@@ -76,9 +84,6 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         _currentModalView = _currentInputMethod == TransactionInputMethod.aiChat
             ? ModalView.aiChat
             : ModalView.manualForm;
-        if (_currentModalView == ModalView.aiChat && _chatMessages.isEmpty) {
-          _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
-        }
       });
     } else {
       // Default to manual if no preference saved
@@ -96,69 +101,89 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
-
-    return Padding(
-      padding: EdgeInsets.only(left: 16, right: 16, top: 20, bottom: bottomPadding + 16),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          TransactionMethodSelector(
-            currentInputMethod: _currentInputMethod,
-            onMethodChanged: _handleMethodChange,
-          ),
-          const SizedBox(height: 20),
-          Flexible(
-            child: SingleChildScrollView(
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8), 
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Dismiss Handle
+            Center(
+              child: Container(
+                width: 40,
+                height: 5,
+                margin: const EdgeInsets.only(bottom: 10),
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+            // Title
+            Padding(
+              padding: const EdgeInsets.only(bottom: 15.0),
+              child: Text(
+                'New Transaction',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            // Method selector
+            TransactionMethodSelector(
+              currentInputMethod: _currentInputMethod,
+              onMethodChanged: _handleMethodChange,
+            ),
+            const SizedBox(height: 16),
+            // Content area - this is where the form or chat interface will go
+            Expanded(
               child: _buildCurrentView(),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildCurrentView() {
-    // Ensure AI chat has initial message
-    if (_currentModalView == ModalView.aiChat && _chatMessages.isEmpty && mounted) {
-      setState(() {
-        _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
-      });
-    }
-
+    Widget content;
+    
     switch (_currentModalView) {
       case ModalView.aiChat:
-        return AiChatInterface(
+        content = AiChatInterface(
           chatMessages: _chatMessages,
           isAiProcessing: _isAiProcessing,
           onSendMessage: _handleAiChatSend,
         );
+        break;
       case ModalView.aiReview:
         if (_parsedAiTransactionData == null) {
-          return const Center(child: Text('Error: No data to review.'));
+          content = const Center(child: Text('Error: No data to review.'));
+        } else {
+          // Populate form fields for review
+          _populateFormWithAiData();
+          
+          content = ManualFormInterface(
+            formKey: _formKey,
+            amountController: _amountController,
+            dateController: _dateController,
+            descriptionController: _descriptionController,
+            vendorController: _vendorController,
+            selectedTransactionType: _selectedTransactionType,
+            selectedCategory: _selectedCategory,
+            selectedDate: _selectedDate,
+            onTransactionTypeChanged: _handleTransactionTypeChange,
+            onCategoryChanged: _handleCategoryChange,
+            onDateChanged: _handleDateChange,
+            isReviewingAi: true,
+          );
         }
-        
-        // Populate form fields for review
-        _populateFormWithAiData();
-        
-        return ManualFormInterface(
-          formKey: _formKey,
-          amountController: _amountController,
-          dateController: _dateController,
-          descriptionController: _descriptionController,
-          vendorController: _vendorController,
-          selectedTransactionType: _selectedTransactionType,
-          selectedCategory: _selectedCategory,
-          selectedDate: _selectedDate,
-          onTransactionTypeChanged: _handleTransactionTypeChange,
-          onCategoryChanged: _handleCategoryChange,
-          onDateChanged: _handleDateChange,
-          isReviewingAi: true,
-        );
+        break;
       case ModalView.manualForm:
       default:
-        return ManualFormInterface(
+        content = ManualFormInterface(
           formKey: _formKey,
           amountController: _amountController,
           dateController: _dateController,
@@ -171,7 +196,21 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           onCategoryChanged: _handleCategoryChange,
           onDateChanged: _handleDateChange,
         );
+        break;
     }
+
+    // Wrap in a Card with clear bounds and no extra scrolling
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor, width: 0.5),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: content,
+      ),
+    );
   }
 
   void _handleMethodChange(TransactionInputMethod method) {
@@ -179,14 +218,17 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       _currentInputMethod = method;
       _currentModalView = method == TransactionInputMethod.aiChat ? ModalView.aiChat : ModalView.manualForm;
       _aiInteractionCount = 0;
-      _chatMessages.clear();
       
-      if (_currentModalView == ModalView.aiChat) {
+      // Don't clear chat messages if already present
+      if (_currentModalView == ModalView.aiChat && _chatMessages.isEmpty) {
         _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
       }
       
       _clearFormFields();
     });
+    
+    // Save the method preference
+    _saveLastUsedMethod(method);
   }
 
   void _handleAiChatSend(String message) {
@@ -245,6 +287,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   void _handleDateChange(DateTime date) {
     setState(() {
       _selectedDate = date;
+      _dateController.text = DateFormat('yyyy-MM-dd').format(date);
     });
   }
 
@@ -295,4 +338,4 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     _vendorController.dispose();
     super.dispose();
   }
-} 
+}
