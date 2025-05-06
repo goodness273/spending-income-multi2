@@ -3,12 +3,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/user_model.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:logger/logger.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final Logger _logger = Logger();
 
   // Get the current user
   User? get currentUser => _auth.currentUser;
@@ -156,10 +157,10 @@ class AuthService {
       }
     } on FirebaseAuthException catch (e) {
       // Handle specific Firebase Auth errors
-      print("Firebase Auth Error during Google Sign In: ${e.code} - ${e.message}");
+      _logger.e("Firebase Auth Error during Google Sign In: ${e.code} - ${e.message}");
       rethrow;
     } catch (e) {
-       print("General Error during Google Sign In: $e");
+      _logger.e("General Error during Google Sign In: $e");
       // Handle other errors (network issues, etc.)
       rethrow;
     }
@@ -221,10 +222,10 @@ class AuthService {
          throw Exception('Failed to sign in with Apple');
       }
     } on FirebaseAuthException catch (e) {
-       print("Firebase Auth Error during Apple Sign In: ${e.code} - ${e.message}");
+       _logger.e("Firebase Auth Error during Apple Sign In: ${e.code} - ${e.message}");
       rethrow;
     } catch (e) {
-       print("General Error during Apple Sign In: $e");
+       _logger.e("General Error during Apple Sign In: $e");
        // Handle specific Apple Sign In errors if needed
       rethrow;
     }

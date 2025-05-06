@@ -34,10 +34,9 @@ class AppTheme {
   static const Color accentGreenDark = Color(0xFF4ADE80);
   // --- Primary color reference for themes ---
   // Light theme uses Black as primary action color
-  // Dark theme will use a contrasting color (e.g., white or a light blue) - let's use white for now
+  // Dark theme will use a contrasting color (white)
   static const Color lightPrimaryAction = primaryBlack;
-  static const Color darkPrimaryAction =
-      white; // Or maybe keep primaryBlueDark? Let's try white.
+  static const Color darkPrimaryAction = white;
 
   // Light mode colors - Based on Image
   static const Color lightBackground = white; // White background
@@ -236,7 +235,7 @@ class AppTheme {
         fontSize: 16,
         fontWeight: FontWeight.w500,
       ), // Match inspiration button text
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.symmetric(vertical: 12),
     );
   }
 
@@ -244,11 +243,8 @@ class AppTheme {
     // Inspiration shows social buttons as simple outlined squares. Let's adapt this.
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return OutlinedButton.styleFrom(
-      // Changed to OutlinedButton
       backgroundColor: Colors.transparent, // No background
-      foregroundColor: getPrimaryTextColor(
-        isDark,
-      ), // Text/icon color matches primary text
+      foregroundColor: getPrimaryTextColor(isDark), // Text/icon color matches primary text
       minimumSize: const Size(56, 56), // Make it squarish
       maximumSize: const Size(64, 64),
       side: BorderSide(
@@ -312,16 +308,8 @@ class AppTheme {
     Widget? suffixIcon,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderSideColor = getDividerColor(
-      isDark,
-    ); // Use divider color for border
-    final fillColor =
-        isDark
-            ? darkCardBackground
-            : lightGray.withOpacity(
-              0.5,
-            ); // Lighter fill or white? Let's try light gray fill
-
+    final borderSideColor = getDividerColor(isDark); // Use divider color for border
+    
     return InputDecoration(
       // labelText is now the HINT text
       hintText: labelText,
@@ -430,9 +418,7 @@ class AppTheme {
         )
         .apply(bodyColor: lightSecondaryText, displayColor: lightPrimaryText);
 
-    final baseTheme = ThemeData.light(
-      useMaterial3: true,
-    ); // Start with base light theme
+    final baseTheme = ThemeData.light(); // Start with base light theme
     return baseTheme.copyWith(
       brightness: Brightness.light,
       colorScheme: ColorScheme.light(
@@ -441,8 +427,6 @@ class AppTheme {
         secondary: darkGray, // Accent color? Using dark gray
         tertiary: mediumGray, // Another accent? Using medium gray
         onSecondary: white, // Text on secondary
-        background: lightBackground, // White
-        onBackground: lightPrimaryText, // Black text on background
         surface: lightCardColor, // White
         onSurface: lightPrimaryText, // Black text on surface
         error: Colors.red.shade700,
@@ -568,7 +552,6 @@ class AppTheme {
           ),
         ),
       ),
-      useMaterial3: true,
     );
   }
 
@@ -591,9 +574,7 @@ class AppTheme {
         )
         .apply(bodyColor: darkSecondaryText, displayColor: darkPrimaryText);
 
-    final baseTheme = ThemeData.dark(
-      useMaterial3: true,
-    ); // Start with base dark theme
+    final baseTheme = ThemeData.dark(); // Start with base dark theme
     return baseTheme.copyWith(
       brightness: Brightness.dark,
       colorScheme: ColorScheme.dark(
@@ -602,8 +583,6 @@ class AppTheme {
         secondary: mediumGray, // Accent? Medium Gray
         tertiary: darkGray, // Accent? Dark Gray
         onSecondary: primaryBlack, // Text on secondary
-        background: darkBackground, // Near-black
-        onBackground: darkPrimaryText, // White text
         surface: darkCardBackground, // Dark Gray surface
         onSurface: darkPrimaryText, // White text
         error: Colors.red.shade300,
@@ -729,7 +708,6 @@ class AppTheme {
           ),
         ),
       ),
-      useMaterial3: true,
     );
   }
 }

@@ -10,7 +10,7 @@ class UIComponents {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: CircularProgressIndicator(
-        color: isDark ? AppTheme.accentYellow : AppTheme.primaryBlue,
+        color: isDark ? AppTheme.accentYellow : AppTheme.primaryBlack,
       ),
     );
   }
@@ -129,14 +129,14 @@ class UIComponents {
             if (cancelText != null)
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text(cancelText),
                 style: AppTheme.getTextButtonStyle(context),
+                child: Text(cancelText),
               ),
             if (confirmText != null)
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                child: Text(confirmText),
                 style: AppTheme.getPrimaryButtonStyle(context),
+                child: Text(confirmText),
               ),
           ],
         );
@@ -173,7 +173,6 @@ class UIComponents {
         icon = Icons.warning;
         break;
       case SnackBarType.info:
-      default:
         backgroundColor = isDark ? Colors.blue.shade400 : Colors.blue.shade700;
         icon = Icons.info;
         break;
@@ -214,20 +213,24 @@ class UIComponents {
     List<Widget>? actions,
     bool centerTitle = true,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return AppBar(
       title: Text(
         title,
-        style: const TextStyle(
-          color: Colors.white,
+        style: TextStyle(
+          color: isDark ? AppTheme.primaryBlack : AppTheme.white,
           fontWeight: FontWeight.bold,
         ),
       ),
-      backgroundColor: AppTheme.primaryBlue,
-      foregroundColor: AppTheme.white,
+      backgroundColor: isDark ? AppTheme.white : AppTheme.primaryBlack,
+      foregroundColor: isDark ? AppTheme.primaryBlack : AppTheme.white,
       centerTitle: centerTitle,
       actions: actions,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back, color: Colors.white),
+        icon: Icon(
+          Icons.arrow_back,
+          color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+        ),
         onPressed: () => Navigator.of(context).pop(),
       ),
     );

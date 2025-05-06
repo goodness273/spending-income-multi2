@@ -15,7 +15,7 @@ class UserModel {
     List<String>? categories,
     DateTime? createdAt,
     this.settings,
-  }) : this.categories =
+  }) : categories =
            categories ??
            [
              'Food',
@@ -29,7 +29,7 @@ class UserModel {
              'Gift',
              'Other',
            ],
-       this.createdAt = createdAt ?? DateTime.now();
+       createdAt = createdAt ?? DateTime.now();
 
   // Convert a UserModel into a Map
   Map<String, dynamic> toMap() {

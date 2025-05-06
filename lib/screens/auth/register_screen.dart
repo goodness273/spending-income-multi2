@@ -434,7 +434,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           style: AppTheme.getSecondaryButtonStyle(
                             context,
                           ).copyWith(
-                            foregroundColor: MaterialStateProperty.all(
+                            foregroundColor: WidgetStateProperty.all(
                               AppTheme.getPrimaryTextColor(isDark),
                             ),
                           ),
@@ -475,7 +475,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           Navigator.pop(context);
                         },
                         style: AppTheme.getTextButtonStyle(context).copyWith(
-                          padding: MaterialStateProperty.all(
+                          padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(horizontal: 4.0),
                           ),
                         ),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/auth_error_handler.dart';
 import '../../utils/app_theme.dart';
+import '../../providers/preferences_provider.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 import 'dart:io' show Platform;
@@ -23,6 +24,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   bool _obscurePassword = true;
   bool _isGoogleLoading = false; // Loading state for Google
   bool _isAppleLoading = false;  // Loading state for Apple
+  bool _rememberMe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Load saved email if "remember me" is enabled
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final prefs = ref.read(preferencesProvider);
+      setState(() {
+        _rememberMe = prefs.rememberMe;
+        if (prefs.rememberMe && prefs.savedEmail != null) {
+          _emailController.text = prefs.savedEmail!;
+        }
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -39,6 +56,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       });
 
       try {
+        // Save email preference if remember me is checked
+        if (_rememberMe) {
+          await ref.read(preferencesProvider.notifier).setRememberMe(
+                true,
+                email: _emailController.text.trim(),
+              );
+        } else {
+          // Clear saved email if remember me is unchecked
+          await ref.read(preferencesProvider.notifier).setRememberMe(false);
+        }
+
         final authNotifier = ref.read(authNotifierProvider.notifier);
         await authNotifier.signInWithEmailAndPassword(
           _emailController.text.trim(),
@@ -275,34 +303,58 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 16), // Spacing before forgot password
-                  // Forgot password link (Align right)
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const ForgotPasswordScreen(),
+                  // Forgot password link and Remember me are on same row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      // Remember me (left)
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: _rememberMe,
+                            onChanged: (value) {
+                              setState(() {
+                                _rememberMe = value ?? false;
+                              });
+                            },
+                            activeColor: AppTheme.getPrimaryColor(isDark),
                           ),
-                        );
-                      },
-                      style: AppTheme.getTextButtonStyle(context).copyWith(
-                        // Use theme style
-                        padding: MaterialStateProperty.all(
-                          EdgeInsets.zero,
-                        ), // Remove extra padding
+                          Text(
+                            'Remember me',
+                            style: AppTheme.getSmallStyle(isDark).copyWith(
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
-                      child: Text(
-                        'Forgot password?',
-                        style: AppTheme.getSmallStyle(isDark).copyWith(
-                          color: AppTheme.getPrimaryColor(isDark),
-                          fontWeight: FontWeight.w500,
-                        ), // Match inspiration style
+                      // Forgot password (right)
+                      TextButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const ForgotPasswordScreen(),
+                            ),
+                          );
+                        },
+                        style: AppTheme.getTextButtonStyle(context).copyWith(
+                          // Use theme style
+                          padding: WidgetStateProperty.all(
+                            EdgeInsets.zero,
+                          ), // Remove extra padding
+                        ),
+                        child: Text(
+                          'Forgot password?',
+                          style: AppTheme.getSmallStyle(isDark).copyWith(
+                            color: AppTheme.getPrimaryColor(isDark),
+                            fontWeight: FontWeight.w500,
+                          ), // Match inspiration style
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                   const SizedBox(height: 24), // Spacing before error/button
+
                   // Error message
                   if (_errorMessage != null)
                     Padding(
@@ -386,10 +438,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         OutlinedButton(
                           onPressed: _isGoogleLoading || _isAppleLoading ? null : _signInWithApple,
                           style: AppTheme.getOutlinedSocialButtonStyle(context).copyWith(
-                             backgroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                             backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                                 return Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
                              }),
-                             foregroundColor: MaterialStateProperty.resolveWith<Color?>((states) {
+                             foregroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                                 return Theme.of(context).brightness == Brightness.dark ? Colors.black : Colors.white;
                              }),
                           ),
@@ -437,7 +489,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         },
                         style: AppTheme.getTextButtonStyle(context).copyWith(
                           // Use theme style
-                          padding: MaterialStateProperty.all(
+                          padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(horizontal: 4.0),
                           ), // Adjust padding
                         ),

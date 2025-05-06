@@ -17,7 +17,7 @@ class DashboardScreen extends StatelessWidget {
           Icon(
             Icons.dashboard_outlined,
             size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withOpacity(0.5),
+            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
           ),
           const SizedBox(height: 24),
           Text('Dashboard', style: AppTheme.getSubheadingStyle(isDark)),
@@ -42,7 +42,7 @@ class TransactionsScreen extends StatelessWidget {
           Icon(
             Icons.swap_horiz_outlined,
             size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withOpacity(0.5),
+            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
           ),
           const SizedBox(height: 24),
           Text('Transactions', style: AppTheme.getSubheadingStyle(isDark)),
@@ -68,7 +68,7 @@ class ProfileScreen extends ConsumerWidget {
           Icon(
             Icons.person_outline,
             size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withOpacity(0.5),
+            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
           ),
           const SizedBox(height: 24),
           Text('Profile', style: AppTheme.getSubheadingStyle(isDark)),
@@ -94,7 +94,7 @@ class ProfileScreen extends ConsumerWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                   side: BorderSide(
-                    color: AppTheme.getPrimaryColor(isDark).withOpacity(0.3),
+                    color: AppTheme.getPrimaryColor(isDark).withAlpha(77),
                   ),
                 ),
               ),
@@ -172,7 +172,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _selectedIndex == 1
               ? FloatingActionButton(
                 onPressed: () {
-                  // TODO: Open add transaction screen
+                  //TODO: Open add transaction screen
                 },
                 elevation: 0,
                 shape: const RoundedRectangleBorder(

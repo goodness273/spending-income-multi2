@@ -205,7 +205,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           Navigator.pop(context);
                         },
                         style: AppTheme.getTextButtonStyle(context).copyWith(
-                          padding: MaterialStateProperty.all(
+                          padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(horizontal: 4.0),
                           ),
                         ),

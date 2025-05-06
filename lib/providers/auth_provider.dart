@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/auth_service.dart';
 import '../models/user_model.dart';
+import 'package:logger/logger.dart';
 
 // Auth service provider
 final authServiceProvider = Provider<AuthService>((ref) {
@@ -32,6 +33,7 @@ enum AuthState {
 // Auth state notifier class
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
+  final Logger _logger = Logger();
 
   AuthNotifier(this._authService) : super(AuthState.initial);
 
@@ -99,12 +101,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<UserModel?> signInWithGoogle() async {
     try {
       state = AuthState.authenticating;
-      print('[AuthNotifier] Attempting Google Sign In...');
+      _logger.i('[AuthNotifier] Attempting Google Sign In...');
       final user = await _authService.signInWithGoogle();
       state = AuthState.authenticated;
       return user;
     } catch (e) {
-      print('[AuthNotifier] Google Sign In Error: $e');
+      _logger.e('[AuthNotifier] Google Sign In Error: $e');
       state = AuthState.error;
       rethrow;
     }
@@ -114,12 +116,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<UserModel?> signInWithApple() async {
     try {
       state = AuthState.authenticating;
-      print('[AuthNotifier] Attempting Apple Sign In...');
+      _logger.i('[AuthNotifier] Attempting Apple Sign In...');
       final user = await _authService.signInWithApple();
       state = AuthState.authenticated;
       return user;
     } catch (e) {
-      print('[AuthNotifier] Apple Sign In Error: $e');
+      _logger.e('[AuthNotifier] Apple Sign In Error: $e');
       state = AuthState.error;
       rethrow;
     }

@@ -33,10 +33,10 @@ class OnboardingPage extends StatelessWidget {
             width: 140,
             height: 140,
             decoration: BoxDecoration(
-              color: data.backgroundColor.withOpacity(0.1),
+              color: data.backgroundColor.withAlpha(26),
               borderRadius: BorderRadius.circular(28),
               border: Border.all(
-                color: data.backgroundColor.withOpacity(0.2),
+                color: data.backgroundColor.withAlpha(51),
                 width: 1,
               ),
             ),
