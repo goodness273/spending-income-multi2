@@ -9,7 +9,7 @@ import '../transactions/add_transaction/add_transaction_modal.dart';
 
 // Import the screen widgets
 import 'dashboard_screen.dart';
-import 'transactions_screen.dart';
+import '../transactions/transactions_screen.dart';
 import 'analytics_screen.dart';
 import 'profile_screen.dart';
 
