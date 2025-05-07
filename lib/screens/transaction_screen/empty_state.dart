@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:spending_income/utils/app_theme/index.dart';
 
-class TransactionsScreen extends StatelessWidget {
-  const TransactionsScreen({super.key});
+class EmptyState extends StatelessWidget {
+  final bool isDark;
+  final bool hasFilters;
+
+  const EmptyState({
+    super.key,
+    required this.isDark,
+    this.hasFilters = false,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -17,14 +23,19 @@ class TransactionsScreen extends StatelessWidget {
             color: AppThemeHelpers.getPrimaryColor(isDark).withAlpha(128),
           ),
           const SizedBox(height: 24),
-          Text('Transactions', style: AppThemeHelpers.getSubheadingStyle(isDark)),
+          Text(
+            'No Transactions Found',
+            style: AppThemeHelpers.getSubheadingStyle(isDark),
+          ),
           const SizedBox(height: 8),
-          Text('Coming Soon', style: AppThemeHelpers.getBodyStyle(isDark)),
+          Text(
+            hasFilters
+                ? 'Try changing your filters'
+                : 'Add transactions using the + button',
+            style: AppThemeHelpers.getBodyStyle(isDark),
+          ),
         ],
       ),
     );
   }
 } 
-
-
-

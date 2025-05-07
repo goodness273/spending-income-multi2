@@ -9,7 +9,7 @@ import '../transactions/add_transaction/add_transaction_modal.dart';
 
 // Import the screen widgets
 import 'dashboard_screen.dart';
-import '../transactions/transactions_screen.dart';
+import '../transaction_screen/transaction_screen.dart';
 import 'analytics_screen.dart';
 import 'profile_screen.dart';
 
@@ -30,7 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // List of the screen widgets to display in the body
   static const List<Widget> _screenOptions = <Widget>[
     DashboardScreen(),
-    TransactionsScreen(),
+    TransactionScreen(),
     AnalyticsScreen(), // Corresponds to index 2
     ProfileScreen(),   // Corresponds to index 3
   ];

@@ -12,14 +12,23 @@ import 'package:uuid/uuid.dart';
 
 class AddTransactionModal extends StatefulWidget {
   final Function(Transaction) onTransactionAdded;
+  final Transaction? initialTransaction;
 
-  const AddTransactionModal({super.key, required this.onTransactionAdded});
+  const AddTransactionModal({
+    super.key, 
+    required this.onTransactionAdded,
+    this.initialTransaction,
+  });
 
   @override
   State<AddTransactionModal> createState() => _AddTransactionModalState();
 
   // Static method to show the modal
-  static Future<void> show(BuildContext context, Function(Transaction) onTransactionAdded) async {
+  static Future<void> show(
+    BuildContext context, 
+    Function(Transaction) onTransactionAdded, 
+    {Transaction? initialTransaction}
+  ) async {
     final result = await showModalBottomSheet<Transaction>(
       context: context,
       isScrollControlled: true,
@@ -32,7 +41,10 @@ class AddTransactionModal extends StatefulWidget {
         padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
         child: SizedBox(
           height: MediaQuery.of(context).size.height * 0.75,
-          child: AddTransactionModal(onTransactionAdded: onTransactionAdded),
+          child: AddTransactionModal(
+            onTransactionAdded: onTransactionAdded,
+            initialTransaction: initialTransaction,
+          ),
         ),
       ),
     );
@@ -72,7 +84,14 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   void initState() {
     super.initState();
     _loadLastUsedMethod();
-    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    
+    // If editing a transaction, populate form fields
+    if (widget.initialTransaction != null) {
+      _populateFormWithExistingTransaction();
+    } else {
+      _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    }
+    
     _initializeGemini();
     
     // Initialize AI chat messages
@@ -155,19 +174,21 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             Padding(
               padding: const EdgeInsets.only(bottom: 15.0),
               child: Text(
-                'New Transaction',
+                widget.initialTransaction != null ? 'Edit Transaction' : 'New Transaction',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.bold,
                 ),
                 textAlign: TextAlign.center,
               ),
             ),
-            // Method selector
-            TransactionMethodSelector(
-              currentInputMethod: _currentInputMethod,
-              onMethodChanged: _handleMethodChange,
-            ),
-            const SizedBox(height: 16),
+            // Method selector - Only show when adding new transaction
+            if (widget.initialTransaction == null) ...[
+              TransactionMethodSelector(
+                currentInputMethod: _currentInputMethod,
+                onMethodChanged: _handleMethodChange,
+              ),
+              const SizedBox(height: 16),
+            ],
             // Content area - this is where the form or chat interface will go
             Expanded(
               child: _buildCurrentView(),
@@ -182,22 +203,64 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     Widget content;
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
-    switch (_currentModalView) {
-      case ModalView.aiChat:
-        content = AiChatInterface(
-          chatMessages: _chatMessages,
-          isAiProcessing: _isAiProcessing,
-          onSendMessage: _handleAiChatSend,
-          isGeminiEnabled: _isGeminiAvailable,
-        );
-        break;
-      case ModalView.aiReview:
-        if (_parsedAiTransactionData == null) {
-          content = const Center(child: Text('Error: No data to review.'));
-        } else {
-          // Populate form fields for review
-          _populateFormWithAiData();
-          
+    // When editing, always use manual form regardless of the current input method
+    if (widget.initialTransaction != null) {
+      content = ManualFormInterface(
+        formKey: _formKey,
+        amountController: _amountController,
+        dateController: _dateController,
+        descriptionController: _descriptionController,
+        vendorController: _vendorController,
+        selectedTransactionType: _selectedTransactionType,
+        selectedCategory: _selectedCategory,
+        selectedDate: _selectedDate,
+        onTransactionTypeChanged: _handleTransactionTypeChange,
+        onCategoryChanged: _handleCategoryChange,
+        onDateChanged: _handleDateChange,
+        isEditing: true,
+        onDelete: () {
+          // Close the modal
+          Navigator.pop(context);
+          // Return the transaction to be deleted
+          widget.onTransactionAdded(widget.initialTransaction!);
+        },
+      );
+    } else {
+      // Normal flow for new transactions
+      switch (_currentModalView) {
+        case ModalView.aiChat:
+          content = AiChatInterface(
+            chatMessages: _chatMessages,
+            isAiProcessing: _isAiProcessing,
+            onSendMessage: _handleAiChatSend,
+            isGeminiEnabled: _isGeminiAvailable,
+          );
+          break;
+        case ModalView.aiReview:
+          if (_parsedAiTransactionData == null) {
+            content = const Center(child: Text('Error: No data to review.'));
+          } else {
+            // Populate form fields for review
+            _populateFormWithAiData();
+            
+            content = ManualFormInterface(
+              formKey: _formKey,
+              amountController: _amountController,
+              dateController: _dateController,
+              descriptionController: _descriptionController,
+              vendorController: _vendorController,
+              selectedTransactionType: _selectedTransactionType,
+              selectedCategory: _selectedCategory,
+              selectedDate: _selectedDate,
+              onTransactionTypeChanged: _handleTransactionTypeChange,
+              onCategoryChanged: _handleCategoryChange,
+              onDateChanged: _handleDateChange,
+              isReviewingAi: true,
+            );
+          }
+          break;
+        case ModalView.manualForm:
+        default:
           content = ManualFormInterface(
             formKey: _formKey,
             amountController: _amountController,
@@ -210,26 +273,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             onTransactionTypeChanged: _handleTransactionTypeChange,
             onCategoryChanged: _handleCategoryChange,
             onDateChanged: _handleDateChange,
-            isReviewingAi: true,
           );
-        }
-        break;
-      case ModalView.manualForm:
-      default:
-        content = ManualFormInterface(
-          formKey: _formKey,
-          amountController: _amountController,
-          dateController: _dateController,
-          descriptionController: _descriptionController,
-          vendorController: _vendorController,
-          selectedTransactionType: _selectedTransactionType,
-          selectedCategory: _selectedCategory,
-          selectedDate: _selectedDate,
-          onTransactionTypeChanged: _handleTransactionTypeChange,
-          onCategoryChanged: _handleCategoryChange,
-          onDateChanged: _handleDateChange,
-        );
-        break;
+          break;
+      }
     }
 
     // Wrap in a Card with clear bounds and no extra scrolling
@@ -495,6 +541,25 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         _parsedAiTransactionData = null;
       }
     });
+  }
+
+  // Method to populate form with existing transaction data
+  void _populateFormWithExistingTransaction() {
+    final transaction = widget.initialTransaction!;
+    _selectedTransactionType = transaction.type;
+    _amountController.text = transaction.amount.toString();
+    _selectedDate = transaction.date;
+    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    _descriptionController.text = transaction.description;
+    _selectedCategory = transaction.category;
+    
+    if (transaction.vendorOrSource != null) {
+      _vendorController.text = transaction.vendorOrSource!;
+    }
+    
+    // Always set current view to manual form when editing, regardless of original creation method
+    _currentInputMethod = TransactionInputMethod.manual;
+    _currentModalView = ModalView.manualForm;
   }
 
   @override

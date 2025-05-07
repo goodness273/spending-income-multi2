@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:spending_income/models/transaction.dart';
@@ -21,6 +22,8 @@ class ManualFormInterface extends StatefulWidget {
   final Function(String?) onCategoryChanged;
   final Function(DateTime) onDateChanged;
   final bool isReviewingAi;
+  final bool isEditing;
+  final Function()? onDelete;
 
   const ManualFormInterface({
     super.key,
@@ -36,6 +39,8 @@ class ManualFormInterface extends StatefulWidget {
     required this.onCategoryChanged,
     required this.onDateChanged,
     this.isReviewingAi = false,
+    this.isEditing = false,
+    this.onDelete,
   });
 
   @override
@@ -50,9 +55,9 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
         ? defaultSpendingCategories
         : defaultIncomeCategories;
 
-    return Form(
-      key: widget.formKey,
-      child: SingleChildScrollView(
+    return SingleChildScrollView(
+      child: Form(
+        key: widget.formKey,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -191,7 +196,8 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
             
             ElevatedButton.icon(
               icon: Icon(widget.isReviewingAi ? Icons.check_circle_outline : Icons.save_alt_outlined),
-              label: Text(widget.isReviewingAi ? 'Confirm & Save' : 'Save Transaction'),
+              label: Text(widget.isReviewingAi ? 'Confirm & Save' : 
+                          widget.isEditing ? 'Update Transaction' : 'Save Transaction'),
               style: AppButtonStyles.getPrimaryButtonStyle(context),
               onPressed: () {
                 if (widget.formKey.currentState!.validate()) {
@@ -200,6 +206,24 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
                 }
               },
             ),
+            
+            // Delete button (only show when editing)
+            if (widget.isEditing && widget.onDelete != null) ...[
+              const SizedBox(height: 16),
+              OutlinedButton.icon(
+                icon: const Icon(Icons.delete_outline, color: Colors.red),
+                label: const Text('Delete Transaction'),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  side: BorderSide(color: Colors.red.shade300, width: 1),
+                  foregroundColor: Colors.red.shade300,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                ),
+                onPressed: () => _showDeleteConfirmation(context),
+              ),
+            ],
             
             // Add some bottom padding to ensure the button is visible when scrolling
             const SizedBox(height: 16),
@@ -228,6 +252,34 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
       description: description,
       userId: 'temp-user-id', // Placeholder to be replaced
       vendorOrSource: vendorOrSource,
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete Transaction'),
+        content: const Text('Are you sure you want to delete this transaction? This action cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              if (widget.onDelete != null) {
+                widget.onDelete!();
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: Colors.red,
+            ),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 }
