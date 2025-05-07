@@ -6,6 +6,8 @@ import 'package:spending_income/screens/transactions/add_transaction/ai_chat_int
 import 'package:spending_income/screens/transactions/add_transaction/manual_form_interface.dart';
 import 'package:spending_income/screens/transactions/add_transaction/transaction_method_selector.dart';
 import 'package:spending_income/screens/transactions/add_transaction/transaction_models.dart';
+import 'package:spending_income/services/gemini_service.dart';
+import 'package:spending_income/utils/app_theme.dart';
 import 'package:uuid/uuid.dart';
 
 class AddTransactionModal extends StatefulWidget {
@@ -51,6 +53,10 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   int _aiInteractionCount = 0;
   bool _isAiProcessing = false;
   Transaction? _parsedAiTransactionData;
+  
+  // Gemini Service
+  final GeminiService _geminiService = GeminiService();
+  bool _isGeminiAvailable = false;
 
   // Manual Form related state
   final _formKey = GlobalKey<FormState>();
@@ -67,9 +73,15 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     super.initState();
     _loadLastUsedMethod();
     _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    _initializeGemini();
     
     // Initialize AI chat messages
-    _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+    if (_chatMessages.isEmpty) {
+      _chatMessages.add({
+        'sender': 'ai', 
+        'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'
+      });
+    }
   }
 
   Future<void> _loadLastUsedMethod() async {
@@ -99,11 +111,30 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     await prefs.setString(lastUsedMethodKey, method.name);
   }
 
+  Future<void> _initializeGemini() async {
+    try {
+      // Initialize the Gemini service with your actual API key
+      // If this API key doesn't work, it will try fallback models automatically
+      await _geminiService.initialize(apiKey: 'AIzaSyBG38eMKcTdUyf5faxJGlslI32VayEI9Q0'); 
+      setState(() {
+        _isGeminiAvailable = true;
+      });
+    } catch (e) {
+      debugPrint('Failed to initialize Gemini: $e');
+      setState(() {
+        _isGeminiAvailable = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    // final bottomPadding = MediaQuery.of(context).viewInsets.bottom; // No longer needed here
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 8), 
+        padding: const EdgeInsets.only(left: 16, right: 16, top: 8, bottom: 16), 
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -115,7 +146,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                 height: 5,
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: Colors.grey[300],
+                  color: AppTheme.getDividerColor(isDarkMode),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -149,6 +180,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
 
   Widget _buildCurrentView() {
     Widget content;
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     
     switch (_currentModalView) {
       case ModalView.aiChat:
@@ -156,6 +188,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           chatMessages: _chatMessages,
           isAiProcessing: _isAiProcessing,
           onSendMessage: _handleAiChatSend,
+          isGeminiEnabled: _isGeminiAvailable,
         );
         break;
       case ModalView.aiReview:
@@ -202,9 +235,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     // Wrap in a Card with clear bounds and no extra scrolling
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).cardColor,
+        color: AppTheme.getCardColor(isDarkMode),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor, width: 0.5),
+        border: Border.all(color: AppTheme.getDividerColor(isDarkMode), width: 0.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -216,15 +249,21 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   void _handleMethodChange(TransactionInputMethod method) {
     setState(() {
       _currentInputMethod = method;
-      _currentModalView = method == TransactionInputMethod.aiChat ? ModalView.aiChat : ModalView.manualForm;
-      _aiInteractionCount = 0;
       
-      // Don't clear chat messages if already present
-      if (_currentModalView == ModalView.aiChat && _chatMessages.isEmpty) {
-        _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+      // Preserve the review form if we have parsed transaction data
+      if (_parsedAiTransactionData != null && method == TransactionInputMethod.aiChat) {
+        _currentModalView = ModalView.aiReview;
+      } else {
+        _currentModalView = method == TransactionInputMethod.aiChat ? ModalView.aiChat : ModalView.manualForm;
+        _aiInteractionCount = 0;
+        
+        // Don't clear chat messages if already present
+        if (_currentModalView == ModalView.aiChat && _chatMessages.isEmpty) {
+          _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+        }
+        
+        _clearFormFields();
       }
-      
-      _clearFormFields();
     });
     
     // Save the method preference
@@ -238,6 +277,115 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       _aiInteractionCount++;
     });
 
+    if (_isGeminiAvailable) {
+      // Use Gemini for real AI processing
+      _processWithGemini(message);
+    } else {
+      // Fallback to mock AI processing
+      _mockAiProcessing(message);
+    }
+  }
+  
+  Future<void> _processWithGemini(String message) async {
+    try {
+      // Get a response from Gemini
+      String response;
+      try {
+        response = await _geminiService.sendMessage(message);
+      } catch (apiError) {
+        debugPrint('Error calling Gemini API: $apiError');
+        // Fall back to mock response if API call fails
+        _mockAiProcessing(message);
+        return;
+      }
+      
+      if (!mounted) return;
+      
+      // Add the AI response to chat
+      setState(() {
+        _chatMessages.add({'sender': 'ai', 'text': response});
+        _isAiProcessing = false;
+      });
+      
+      // Try to extract transaction data after the first user message
+      // This makes it more likely to capture transaction data
+      if (_aiInteractionCount >= 1) {
+        debugPrint('Attempting to parse transaction from conversation...');
+        
+        setState(() {
+          _isAiProcessing = true;
+        });
+        
+        Transaction? transaction;
+        
+        try {
+          transaction = await _geminiService.parseTransactionFromConversation();
+        } catch (parseError) {
+          debugPrint('Error during transaction parsing: $parseError');
+          // Continue with null transaction, will handle below
+        } finally {
+          setState(() {
+            _isAiProcessing = false;
+          });
+        }
+        
+        if (!mounted) return;
+        
+        if (transaction != null) {
+          debugPrint('Transaction parsed successfully: ${transaction.description}, ${transaction.amount}');
+          
+          // Add a final message before showing the form
+          setState(() {
+            _chatMessages.add({
+              'sender': 'ai', 
+              'text': 'I\'ve prepared your transaction details for review. Please check and confirm!'
+            });
+            _parsedAiTransactionData = transaction;
+            _currentModalView = ModalView.aiReview;
+          });
+        } else {
+          debugPrint('Failed to parse transaction data');
+          // If we've had multiple attempts and still can't parse, prompt the user
+          if (_aiInteractionCount >= 3) {
+            setState(() {
+              _chatMessages.add({
+                'sender': 'ai', 
+                'text': 'I think I have enough information. Let me prepare your transaction details for review.'
+              });
+              
+              // Fall back to creating a basic transaction from the conversation
+              _parsedAiTransactionData = Transaction(
+                id: const Uuid().v4(),
+                amount: 500.00, // Default amount if parsing failed
+                type: TransactionType.expense,
+                category: 'Other',
+                date: DateTime.now(),
+                description: 'Transaction from chat',
+                userId: 'temp-user-id',
+              );
+              _currentModalView = ModalView.aiReview;
+            });
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error in processWithGemini: $e');
+      if (!mounted) return;
+      
+      setState(() {
+        _isAiProcessing = false;
+        _chatMessages.add({
+          'sender': 'ai', 
+          'text': 'Sorry, I encountered an error. Please try adding your transaction manually.'
+        });
+        _currentInputMethod = TransactionInputMethod.manual;
+        _currentModalView = ModalView.manualForm;
+      });
+    }
+  }
+  
+  // Keep the existing mock method for fallback
+  void _mockAiProcessing(String message) {
     // Simulate AI processing
     Future.delayed(const Duration(seconds: 1), () {
       if (!mounted) return;
@@ -308,9 +456,40 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         : (categories.isNotEmpty ? categories[0] : null);
         
     _selectedDate = _parsedAiTransactionData!.date;
-    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
-    _descriptionController.text = _parsedAiTransactionData!.description ?? '';
-    _vendorController.text = ''; // Just clear this field since we don't have vendorOrSource in the model
+    
+    // Format the date in a user-friendly way
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    
+    // Check if the date is today, yesterday, or within the last week
+    if (_selectedDate.year == now.year && _selectedDate.month == now.month && _selectedDate.day == now.day) {
+      // Add a label to make it clear this is today
+      _dateController.text = "${DateFormat('yyyy-MM-dd').format(_selectedDate)} (Today)";
+    } else if (_selectedDate.year == yesterday.year && _selectedDate.month == yesterday.month && _selectedDate.day == yesterday.day) {
+      // Add a label to make it clear this is yesterday
+      _dateController.text = "${DateFormat('yyyy-MM-dd').format(_selectedDate)} (Yesterday)";
+    } else {
+      // Regular date format
+      _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    }
+    
+    // Process description to extract vendor if present
+    String descriptionText = _parsedAiTransactionData!.description ?? '';
+    String vendorText = '';
+    
+    // Check if description contains vendor info in format "Description (from Vendor)"
+    final vendorRegex = RegExp(r'(.*) \(from (.*)\)$');
+    final match = vendorRegex.firstMatch(descriptionText);
+    
+    if (match != null && match.groupCount >= 2) {
+      // Extract the actual description and vendor
+      descriptionText = match.group(1) ?? descriptionText;
+      vendorText = match.group(2) ?? '';
+      debugPrint('Extracted vendor from description: $vendorText');
+    }
+    
+    _descriptionController.text = descriptionText;
+    _vendorController.text = vendorText;
   }
 
   void _clearFormFields({bool clearParsedAiData = false}) {

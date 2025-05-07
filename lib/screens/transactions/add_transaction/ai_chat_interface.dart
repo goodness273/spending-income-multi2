@@ -8,12 +8,14 @@ class AiChatInterface extends StatefulWidget {
   final List<Map<String, String>> chatMessages;
   final bool isAiProcessing;
   final Function(String) onSendMessage;
+  final bool isGeminiEnabled;
 
   const AiChatInterface({
     super.key,
     required this.chatMessages,
     required this.isAiProcessing,
     required this.onSendMessage,
+    this.isGeminiEnabled = false,
   });
 
   @override
@@ -53,38 +55,64 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
                     padding: EdgeInsets.all(12.0),
                     child: Text("Describe your transaction here.", textAlign: TextAlign.center),
                   ))
-              : ListView.builder(
-                  controller: _scrollController,
-                  itemCount: widget.chatMessages.length,
-                  reverse: true,
-                  padding: const EdgeInsets.all(8.0),
-                  itemBuilder: (context, index) {
-                    final message = widget.chatMessages.reversed.toList()[index];
-                    final bool isUserMessage = message['sender'] == 'user';
-                    return Align(
-                      alignment: isUserMessage ? Alignment.centerRight : Alignment.centerLeft,
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(vertical: 4.0),
-                        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-                        constraints: BoxConstraints(
-                          maxWidth: MediaQuery.of(context).size.width * 0.75,
-                        ),
+              : Column(
+                  children: [
+                    // AI Status Indicator 
+                    if (!keyboardVisible)  // Only show when keyboard is hidden
+                      Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                         decoration: BoxDecoration(
-                          color: isUserMessage
-                              ? AppTheme.getPrimaryColor(isDarkMode)
-                              : (isDarkMode ? AppTheme.darkCardBackground : AppTheme.lightGray),
-                          borderRadius: BorderRadius.circular(16.0),
+                          color: widget.isGeminiEnabled 
+                              ? Colors.green.withOpacity(0.1) 
+                              : Colors.orange.withOpacity(0.1),
+                          borderRadius: const BorderRadius.only(
+                            bottomLeft: Radius.circular(8),
+                            bottomRight: Radius.circular(8),
+                          ),
                         ),
-                        child: Text(
-                          message['text']!,
-                          style: TextStyle(
-                            color: isUserMessage
-                                ? (isDarkMode ? AppTheme.primaryBlack : AppTheme.white)
-                                : AppTheme.getPrimaryTextColor(isDarkMode)),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              widget.isGeminiEnabled 
+                                  ? Icons.check_circle_outline 
+                                  : Icons.info_outline,
+                              size: 14,
+                              color: widget.isGeminiEnabled 
+                                  ? Colors.green 
+                                  : Colors.orange,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              widget.isGeminiEnabled 
+                                  ? "Google Gemini AI" 
+                                  : "AI Simulation Mode",
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: widget.isGeminiEnabled 
+                                    ? Colors.green 
+                                    : Colors.orange,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    );
-                  },
+                    
+                    // Chat messages
+                    Expanded(
+                      child: ListView.builder(
+                        controller: _scrollController,
+                        itemCount: widget.chatMessages.length,
+                        reverse: true,
+                        padding: const EdgeInsets.all(8.0),
+                        itemBuilder: (context, index) {
+                          final message = widget.chatMessages.reversed.toList()[index];
+                          final bool isUserMessage = message['sender'] == 'user';
+                          return _buildMessageBubble(message['text']!, isUserMessage, isDarkMode);
+                        },
+                      ),
+                    ),
+                  ],
                 ),
           ),
         ),
@@ -164,5 +192,36 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
       );
     }
     return null;
+  }
+
+  Widget _buildMessageBubble(String message, bool isUser, bool isDarkMode) {
+    // Check if this is a JSON message and hide it from the user
+    if (!isUser && (message.trim().startsWith('{') || message.trim().startsWith('```json'))) {
+      return const SizedBox.shrink(); // Don't show raw JSON in the chat
+    }
+    
+    return Container(
+      margin: EdgeInsets.only(
+        top: 8,
+        bottom: 8,
+        left: isUser ? 64 : 8,
+        right: isUser ? 8 : 64,
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      decoration: BoxDecoration(
+        color: isUser 
+            ? AppTheme.getPrimaryColor(isDarkMode)
+            : (isDarkMode ? AppTheme.darkCardBackground : AppTheme.lightGray),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Text(
+        message,
+        style: TextStyle(
+          color: isUser 
+              ? (isDarkMode ? AppTheme.darkPrimaryText : AppTheme.white)
+              : AppTheme.getPrimaryTextColor(isDarkMode),
+        ),
+      ),
+    );
   }
 }
