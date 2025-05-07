@@ -147,7 +147,7 @@ Based on our conversation, please extract the transaction details in the followi
   "category": "category name",
   "date": "YYYY-MM-DD",
   "description": "brief description",
-  "vendor": "name of vendor or source",
+  "vendorOrSource": "name of vendor or source",
   "date_reference": "original date reference from the conversation (e.g., 'yesterday', '2 days ago', 'last Monday')"
 }
 
@@ -212,8 +212,8 @@ If any field is unclear or missing, use null for that field. Only respond with t
         debugPrint('Date reference from AI: $dateReference');
         
         // Extract vendor information
-        final String? vendor = jsonData['vendor']?.toString();
-        debugPrint('Vendor from AI: $vendor');
+        final String? vendorOrSource = jsonData['vendorOrSource']?.toString();
+        debugPrint('Vendor/Source from AI: $vendorOrSource');
         
         // Process the date
         DateTime date;
@@ -260,9 +260,11 @@ If any field is unclear or missing, use null for that field. Only respond with t
         
         // Format description to include vendor information if available
         String finalDescription = description;
-        if (vendor != null && vendor.isNotEmpty) {
-          finalDescription = "$description (from $vendor)";
-          debugPrint('Added vendor information to description: $finalDescription');
+        String? extractedVendorOrSource = vendorOrSource;
+        if (vendorOrSource != null && vendorOrSource.isNotEmpty) {
+          finalDescription = "$description";
+          extractedVendorOrSource = vendorOrSource;
+          debugPrint('Added vendor/source information: $extractedVendorOrSource');
         }
         
         // Check if the category exists in the valid categories
@@ -322,6 +324,7 @@ Reply ONLY with the category name that best matches, no other text.
           date: date,
           description: finalDescription,
           userId: 'temp-user-id',
+          vendorOrSource: extractedVendorOrSource,
         );
       } catch (e) {
         debugPrint('JSON decode error: $e');
@@ -350,15 +353,15 @@ Reply ONLY with the category name that best matches, no other text.
     }
     
     // Try to extract vendor from the JSON if possible
-    String? vendor;
+    String? vendorOrSource;
     try {
-      final vendorMatch = RegExp(r'"vendor"\s*:\s*"([^"]+)"').firstMatch(jsonStr);
+      final vendorMatch = RegExp(r'"vendorOrSource"\s*:\s*"([^"]+)"').firstMatch(jsonStr);
       if (vendorMatch != null && vendorMatch.groupCount >= 1) {
-        vendor = vendorMatch.group(1);
-        debugPrint('Mock parser found vendor: $vendor');
+        vendorOrSource = vendorMatch.group(1);
+        debugPrint('Mock parser found vendor/source: $vendorOrSource');
       }
     } catch (e) {
-      debugPrint('Error extracting vendor in mock parser: $e');
+      debugPrint('Error extracting vendor/source in mock parser: $e');
     }
     
     // For demo, let's extract some basic details if possible
@@ -378,9 +381,9 @@ Reply ONLY with the category name that best matches, no other text.
     String description = hasFood ? 'Food purchase' : 'Transaction from chat';
     
     // Add vendor to description if available
-    if (vendor != null && vendor.isNotEmpty) {
-      description = "$description (from $vendor)";
-      debugPrint('Added vendor to mock description: $description');
+    if (vendorOrSource != null && vendorOrSource.isNotEmpty) {
+      // Don't add to description since we're storing it separately
+      debugPrint('Found vendor/source for mock transaction: $vendorOrSource');
     }
     
     return Transaction(
@@ -391,6 +394,7 @@ Reply ONLY with the category name that best matches, no other text.
       date: date,
       description: description,
       userId: 'temp-user-id', // This would be replaced with the actual user ID
+      vendorOrSource: vendorOrSource,
     );
   }
   

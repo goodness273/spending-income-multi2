@@ -196,6 +196,9 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
     final String description = widget.descriptionController.text.trim().isNotEmpty 
         ? widget.descriptionController.text.trim() 
         : "No description";
+    final String? vendorOrSource = widget.vendorController.text.trim().isNotEmpty
+        ? widget.vendorController.text.trim()
+        : null;
     
     return Transaction(
       id: const Uuid().v4(),
@@ -205,6 +208,7 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
       date: widget.selectedDate,
       description: description,
       userId: 'temp-user-id', // Placeholder to be replaced
+      vendorOrSource: vendorOrSource,
     );
   }
 }

@@ -11,6 +11,7 @@ class Transaction {
   final TransactionType type;
   final String category;
   final String userId;
+  final String? vendorOrSource;
 
   Transaction({
     String? id,
@@ -20,6 +21,7 @@ class Transaction {
     required this.type,
     required this.category,
     required this.userId,
+    this.vendorOrSource,
   }) : id = id ?? const Uuid().v4();
 
   // Convert a Transaction into a Map
@@ -32,6 +34,7 @@ class Transaction {
       'type': type.toString().split('.').last,
       'category': category,
       'userId': userId,
+      'vendorOrSource': vendorOrSource,
     };
   }
 
@@ -48,6 +51,7 @@ class Transaction {
               : TransactionType.expense,
       category: map['category'],
       userId: map['userId'],
+      vendorOrSource: map['vendorOrSource'],
     );
   }
 
@@ -66,6 +70,7 @@ class Transaction {
     TransactionType? type,
     String? category,
     String? userId,
+    String? vendorOrSource,
   }) {
     return Transaction(
       id: id ?? this.id,
@@ -75,6 +80,7 @@ class Transaction {
       type: type ?? this.type,
       category: category ?? this.category,
       userId: userId ?? this.userId,
+      vendorOrSource: vendorOrSource ?? this.vendorOrSource,
     );
   }
 }

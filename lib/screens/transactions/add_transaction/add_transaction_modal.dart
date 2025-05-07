@@ -473,23 +473,11 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
     }
     
-    // Process description to extract vendor if present
-    String descriptionText = _parsedAiTransactionData!.description ?? '';
-    String vendorText = '';
+    // Populate description field
+    _descriptionController.text = _parsedAiTransactionData!.description;
     
-    // Check if description contains vendor info in format "Description (from Vendor)"
-    final vendorRegex = RegExp(r'(.*) \(from (.*)\)$');
-    final match = vendorRegex.firstMatch(descriptionText);
-    
-    if (match != null && match.groupCount >= 2) {
-      // Extract the actual description and vendor
-      descriptionText = match.group(1) ?? descriptionText;
-      vendorText = match.group(2) ?? '';
-      debugPrint('Extracted vendor from description: $vendorText');
-    }
-    
-    _descriptionController.text = descriptionText;
-    _vendorController.text = vendorText;
+    // Populate vendor field if available
+    _vendorController.text = _parsedAiTransactionData!.vendorOrSource ?? '';
   }
 
   void _clearFormFields({bool clearParsedAiData = false}) {
