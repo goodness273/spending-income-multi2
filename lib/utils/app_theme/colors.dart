@@ -80,9 +80,13 @@ class AppColors {
     'Shopping': Color(0xFFFF5722),           // Deep Orange
     'Travel': Color(0xFF3F51B5),             // Indigo
     'Education': Color(0xFF795548),          // Brown
+    'Savings': Color(0xFF00BCD4),            // Cyan
+    'Lending': Color(0xFF673AB7),            // Deep Purple
     'Salary': Color(0xFF4CAF50),             // Green
     'Business': Color(0xFF607D8B),           // Blue Grey
     'Investment': Color(0xFFFFC107),         // Amber
+    'Returns': Color(0xFF8BC34A),            // Light Green
+    'Repayments': Color(0xFF03A9F4),         // Light Blue
     'Gifts': Color(0xFFE53935),              // Red
     'Other': Color(0xFF9E9E9E),              // Grey
   };
@@ -99,9 +103,13 @@ class AppColors {
     'Shopping': Color(0xFFFFAB91),           // Light Deep Orange
     'Travel': Color(0xFF9FA8DA),             // Light Indigo
     'Education': Color(0xFFBCAAA4),          // Light Brown
+    'Savings': Color(0xFF80DEEA),            // Light Cyan
+    'Lending': Color(0xFFB39DDB),            // Light Deep Purple
     'Salary': Color(0xFFA5D6A7),             // Light Green
     'Business': Color(0xFFB0BEC5),           // Light Blue Grey
     'Investment': Color(0xFFFFE082),         // Light Amber
+    'Returns': Color(0xFFCDDC39),            // Light Light Green
+    'Repayments': Color(0xFF81D4FA),         // Light Light Blue
     'Gifts': Color(0xFFEF9A9A),              // Light Red
     'Other': Color(0xFFE0E0E0),              // Light Grey
   };

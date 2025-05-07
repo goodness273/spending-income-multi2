@@ -163,7 +163,7 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
                   context: context,
                   initialDate: widget.selectedDate,
                   firstDate: DateTime(2000),
-                  lastDate: DateTime(2101),
+                  lastDate: DateTime.now(),
                 );
                 if (pickedDate != null && pickedDate != widget.selectedDate) {
                   widget.onDateChanged(pickedDate);
@@ -283,6 +283,3 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
     );
   }
 }
-
-
-

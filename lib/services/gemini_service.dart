@@ -222,6 +222,11 @@ If any field is unclear or missing, use null for that field. Only respond with t
           if (jsonData['date'] != null && jsonData['date'].toString().isNotEmpty) {
             try {
               date = DateTime.parse(jsonData['date'].toString());
+              // Validate date is not in the future
+              if (date.isAfter(DateTime.now())) {
+                debugPrint('Future date detected, correcting to current date');
+                date = DateTime.now();
+              }
               debugPrint('Successfully parsed date from JSON: ${date.toIso8601String()}');
             } catch (e) {
               debugPrint('Failed to parse direct date, using fallback: $e');
@@ -468,6 +473,3 @@ Reply ONLY with the category name that best matches, no other text.
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
 } 
-
-
-

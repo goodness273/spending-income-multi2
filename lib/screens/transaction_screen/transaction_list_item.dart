@@ -12,22 +12,32 @@ class TransactionListItem extends StatelessWidget {
   
   // Category icons map with fixed mappings for core categories
   static final Map<String, IconData> categoryIcons = {
-    'Food & Dining': Icons.restaurant,
-    'Transportation': Icons.directions_car,
-    'Transport': Icons.directions_car, // Add alias for Transportation
-    'Housing': Icons.home,
-    'Entertainment': Icons.movie,
-    'Utilities': Icons.power_outlined, // Changed to better match image
-    'Healthcare': Icons.medical_services,
-    'Health': Icons.medical_services, // Add alias for Healthcare
-    'Shopping': Icons.shopping_bag,
-    'Travel': Icons.flight,
-    'Education': Icons.school,
-    'Salary': Icons.account_balance_wallet,
-    'Business': Icons.business,
-    'Investment': Icons.trending_up,
-    'Gifts': Icons.card_giftcard,
-    'Other': Icons.category,
+    // Expense categories
+    'Food & Dining': Icons.restaurant_outlined,
+    'Food': Icons.restaurant_outlined,
+    'Transportation': Icons.directions_car_outlined,
+    'Transport': Icons.directions_car_outlined,
+    'Housing': Icons.home_outlined,
+    'Entertainment': Icons.movie_outlined,
+    'Utilities': Icons.power_outlined,
+    'Healthcare': Icons.medical_services_outlined,
+    'Health': Icons.medical_services_outlined,
+    'Shopping': Icons.shopping_bag_outlined,
+    'Travel': Icons.flight_outlined,
+    'Education': Icons.school_outlined,
+    'Savings': Icons.savings_outlined,
+    'Lending': Icons.handshake_outlined,
+    'Other': Icons.category_outlined,
+    
+    // Income categories
+    'Salary': Icons.account_balance_wallet_outlined,
+    'Freelance': Icons.work_outline,
+    'Business': Icons.business_outlined,
+    'Investment': Icons.trending_up_outlined,
+    'Returns': Icons.assignment_return_outlined,
+    'Repayments': Icons.payments_outlined,
+    'Gifts': Icons.card_giftcard_outlined,
+    'Gift': Icons.card_giftcard_outlined,
   };
 
   const TransactionListItem({
@@ -144,9 +154,40 @@ class TransactionListItem extends StatelessWidget {
     // Handle possible alternate forms/variations of category names
     switch (category.toLowerCase()) {
       case 'health':
-        return 'Healthcare';
+        return 'Health';
+      case 'healthcare':
+        return 'Health';
       case 'transport':
-        return 'Transportation';
+        return 'Transport';
+      case 'transportation':
+        return 'Transport';
+      case 'food':
+        return 'Food';
+      case 'food & dining':
+        return 'Food';
+      case 'gift':
+        return 'Gift';
+      case 'gifts':
+        return 'Gift';
+      case 'freelance':
+        return 'Freelance';
+      // New categories
+      case 'savings':
+        return 'Savings';
+      case 'saving':
+        return 'Savings';
+      case 'lending':
+        return 'Lending';
+      case 'lend':
+        return 'Lending';
+      case 'returns':
+        return 'Returns';
+      case 'return':
+        return 'Returns';
+      case 'repayments':
+        return 'Repayments';
+      case 'repayment':
+        return 'Repayments';
       default:
         return category;
     }

@@ -47,8 +47,47 @@ class AppThemeHelpers {
         ? AppColors.darkCategoryColors
         : AppColors.lightCategoryColors;
     
-    return categoryMap[category] ?? 
+    // Normalize category name for color lookup
+    final normalizedCategory = _normalizeCategoryForColor(category);
+    
+    return categoryMap[normalizedCategory] ?? 
         (isDarkMode ? AppColors.darkTertiaryText : AppColors.lightTertiaryText);
+  }
+  
+  // Helper to normalize category names for color lookups
+  static String _normalizeCategoryForColor(String category) {
+    // Handle possible alternate forms/variations of category names
+    switch (category.toLowerCase()) {
+      case 'health':
+        return 'Health';
+      case 'healthcare':
+        return 'Health';
+      case 'transport':
+        return 'Transport';
+      case 'transportation':
+        return 'Transport';
+      case 'food':
+        return 'Food & Dining';
+      case 'food & dining':
+        return 'Food & Dining';
+      case 'gift':
+        return 'Gifts';
+      case 'gifts':
+        return 'Gifts';
+      case 'freelance':
+        return 'Business';
+      case 'saving':
+        return 'Savings';
+      case 'lend':
+      case 'loan':
+        return 'Lending';
+      case 'return':
+        return 'Returns';
+      case 'repayment':
+        return 'Repayments';
+      default:
+        return category;
+    }
   }
 
   // TextStyle helpers

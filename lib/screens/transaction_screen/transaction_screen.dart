@@ -348,37 +348,66 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
   }
 
   Widget _buildTimePeriodDropdown(bool isDark) {
+    final backgroundColor = isDark ? AppColors.darkCardBackground : AppColors.lightGray;
+    final textColor = isDark ? AppColors.darkPrimaryText : AppColors.lightPrimaryText;
+    final menuBackgroundColor = isDark ? AppColors.darkBackground : AppColors.white;
+    
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark ? AppColors.darkCardBackground : AppColors.lightGray,
+        color: backgroundColor,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: isDark ? AppColors.darkDividerColor : AppColors.lightDividerColor,
           width: 0.5,
         ),
       ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: _currentTimeFilter,
-          icon: const Icon(Icons.keyboard_arrow_down, size: 14),
-          isDense: true,
-          items: ['Daily', 'Weekly', 'Monthly', 'Yearly'].map((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(
-                value,
-                style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
-                  fontSize: 12,
-                ),
+      child: Theme(
+        // Apply a localized theme to the dropdown that includes menu styling
+        data: Theme.of(context).copyWith(
+          // Style the popup menu to match app theme
+          popupMenuTheme: PopupMenuThemeData(
+            color: menuBackgroundColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: BorderSide(
+                color: isDark ? AppColors.darkDividerColor : AppColors.lightDividerColor,
+                width: 0.5,
               ),
-            );
-          }).toList(),
-          onChanged: (newValue) {
-            if (newValue != null) {
-              _handleTimeFilterChanged(newValue);
-            }
-          },
+            ),
+            elevation: 4,
+          ),
+          // Style the dropdown menu items
+          textTheme: Theme.of(context).textTheme.copyWith(
+            bodyMedium: AppThemeHelpers.getBodyStyle(isDark).copyWith(fontSize: 14),
+          ),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: _currentTimeFilter,
+            icon: Icon(Icons.keyboard_arrow_down_outlined, size: 16, color: textColor),
+            isDense: true,
+            // Apply dropdown-specific styling
+            dropdownColor: menuBackgroundColor,
+            borderRadius: BorderRadius.circular(12),
+            elevation: 4,
+            items: ['Daily', 'Weekly', 'Monthly', 'Yearly'].map((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value,
+                  style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
+                    fontSize: 12,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (newValue) {
+              if (newValue != null) {
+                _handleTimeFilterChanged(newValue);
+              }
+            },
+          ),
         ),
       ),
     );
