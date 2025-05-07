@@ -49,151 +49,143 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
 
     return Form(
       key: widget.formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (widget.isReviewingAi)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: Text(
-                'Review & Confirm Transaction', 
-                style: AppTheme.getTitleStyle(isDarkMode), 
-                textAlign: TextAlign.center
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            if (widget.isReviewingAi)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 20.0),
+                child: Text(
+                  'Review & Confirm Transaction', 
+                  style: AppTheme.getTitleStyle(isDarkMode), 
+                  textAlign: TextAlign.center
+                ),
               ),
+            
+            TextFormField(
+              controller: widget.amountController,
+              decoration: InputDecoration(
+                labelText: 'Amount (₦)',
+                prefixText: '₦ ',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              validator: (value) {
+                if (value == null || value.isEmpty) return 'Please enter an amount';
+                if (double.tryParse(value) == null) return 'Please enter a valid number';
+                if (double.parse(value) <= 0) return 'Amount must be positive';
+                return null;
+              },
             ),
-          
-          TextFormField(
-            controller: widget.amountController,
-            decoration: InputDecoration(
-              labelText: 'Amount (₦)',
-              prefixText: '₦ ',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 16),
+            
+            DropdownButtonFormField<TransactionType>(
+              value: widget.selectedTransactionType,
+              decoration: InputDecoration(
+                labelText: 'Type',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              items: TransactionType.values.map((type) {
+                return DropdownMenuItem(
+                  value: type,
+                  child: Text(type.name[0].toUpperCase() + type.name.substring(1)),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  widget.onTransactionTypeChanged(value);
+                }
+              },
             ),
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            validator: (value) {
-              if (value == null || value.isEmpty) return 'Please enter an amount';
-              if (double.tryParse(value) == null) return 'Please enter a valid number';
-              if (double.parse(value) <= 0) return 'Amount must be positive';
-              return null;
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          DropdownButtonFormField<TransactionType>(
-            value: widget.selectedTransactionType,
-            decoration: InputDecoration(
-              labelText: 'Type',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 16),
+            
+            DropdownButtonFormField<String>(
+              value: widget.selectedCategory,
+              decoration: InputDecoration(
+                labelText: 'Category',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              hint: const Text('Select a category'),
+              items: categories.map((category) {
+                return DropdownMenuItem(
+                  value: category,
+                  child: Text(category),
+                );
+              }).toList(),
+              onChanged: (value) {
+                if (value != null) {
+                  widget.onCategoryChanged(value);
+                }
+              },
+              validator: (value) => value == null ? 'Please select a category' : null,
             ),
-            items: TransactionType.values.map((type) {
-              return DropdownMenuItem(
-                value: type,
-                child: Text(type.name[0].toUpperCase() + type.name.substring(1)),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                widget.onTransactionTypeChanged(value);
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          DropdownButtonFormField<String>(
-            value: widget.selectedCategory,
-            decoration: InputDecoration(
-              labelText: 'Category',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            const SizedBox(height: 16),
+            
+            TextFormField(
+              controller: widget.dateController,
+              decoration: InputDecoration(
+                labelText: 'Date',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                suffixIcon: const Icon(Icons.calendar_today),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              readOnly: true,
+              onTap: () async {
+                final DateTime? pickedDate = await showDatePicker(
+                  context: context,
+                  initialDate: widget.selectedDate,
+                  firstDate: DateTime(2000),
+                  lastDate: DateTime(2101),
+                );
+                if (pickedDate != null && pickedDate != widget.selectedDate) {
+                  widget.onDateChanged(pickedDate);
+                }
+              },
             ),
-            hint: const Text('Select a category'),
-            items: categories.map((category) {
-              return DropdownMenuItem(
-                value: category,
-                child: Text(category),
-              );
-            }).toList(),
-            onChanged: (value) {
-              if (value != null) {
-                widget.onCategoryChanged(value);
-              }
-            },
-            validator: (value) => value == null ? 'Please select a category' : null,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: widget.dateController,
-            decoration: InputDecoration(
-              labelText: 'Date',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-              suffixIcon: const Icon(Icons.calendar_today),
+            const SizedBox(height: 16),
+            
+            TextFormField(
+              controller: widget.descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description${widget.isReviewingAi ? '' : ' (Optional)'}',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+              ),
+              maxLines: 2,
             ),
-            readOnly: true,
-            onTap: () async {
-              final DateTime? pickedDate = await showDatePicker(
-                context: context,
-                initialDate: widget.selectedDate,
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2101),
-              );
-              if (pickedDate != null && pickedDate != widget.selectedDate) {
-                widget.onDateChanged(pickedDate);
-                widget.dateController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
-              }
-            },
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: widget.descriptionController,
-            decoration: InputDecoration(
-              labelText: 'Description${widget.isReviewingAi ? '' : ' (Optional)'}',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-            maxLines: 2,
-          ),
-          const SizedBox(height: 16),
-          
-          TextFormField(
-            controller: widget.vendorController,
-            decoration: InputDecoration(
-              labelText: 'Vendor/Source${widget.isReviewingAi ? '' : ' (Optional)'}',
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          
-          if (!widget.isReviewingAi)
-            Padding(
-              padding: const EdgeInsets.only(top: 24.0),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.save_alt_outlined),
-                label: const Text('Save Transaction'),
-                style: AppTheme.getPrimaryButtonStyle(context),
-                onPressed: () {
-                  if (widget.formKey.currentState!.validate()) {
-                    // The parent will handle the save operation
-                    Navigator.pop(context, _buildTransaction());
-                  }
-                },
+            const SizedBox(height: 16),
+            
+            TextFormField(
+              controller: widget.vendorController,
+              decoration: InputDecoration(
+                labelText: 'Vendor/Source${widget.isReviewingAi ? '' : ' (Optional)'}',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               ),
             ),
             
-          if (widget.isReviewingAi)
-            Padding(
-              padding: const EdgeInsets.only(top: 24.0),
-              child: ElevatedButton.icon(
-                icon: const Icon(Icons.save_alt_outlined),
-                label: const Text('Confirm & Save'),
-                style: AppTheme.getPrimaryButtonStyle(context),
-                onPressed: () {
-                  if (widget.formKey.currentState!.validate()) {
-                    // The parent will handle the save operation
-                    Navigator.pop(context, _buildTransaction());
-                  }
-                },
-              ),
+            const SizedBox(height: 24),
+            
+            ElevatedButton.icon(
+              icon: Icon(widget.isReviewingAi ? Icons.check_circle_outline : Icons.save_alt_outlined),
+              label: Text(widget.isReviewingAi ? 'Confirm & Save' : 'Save Transaction'),
+              style: AppTheme.getPrimaryButtonStyle(context),
+              onPressed: () {
+                if (widget.formKey.currentState!.validate()) {
+                  // The parent will handle the save operation
+                  Navigator.pop(context, _buildTransaction());
+                }
+              },
             ),
-        ],
+            
+            // Add some bottom padding to ensure the button is visible when scrolling
+            const SizedBox(height: 16),
+          ],
+        ),
       ),
     );
   }
@@ -215,4 +207,4 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
       userId: 'temp-user-id', // Placeholder to be replaced
     );
   }
-} 
+}
