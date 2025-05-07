@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 import 'onboarding/onboarding_screen.dart';
 import 'auth/auth_wrapper.dart';
 import '../providers/preferences_provider.dart';
@@ -79,7 +79,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(isDark),
+      backgroundColor: AppThemeHelpers.getBackgroundColor(isDark),
       body: Center(
         child: AnimatedBuilder(
           animation: _animationController,
@@ -95,14 +95,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       width: 100,
                       height: 100,
                       decoration: BoxDecoration(
-                        color: AppTheme.getPrimaryColor(isDark),
+                        color: AppThemeHelpers.getPrimaryColor(isDark),
                         borderRadius: BorderRadius.circular(24),
                         boxShadow: [
                           BoxShadow(
                             color:
                                 isDark
-                                    ? AppTheme.darkShadowColor
-                                    : AppTheme.lightShadowColor,
+                                    ? AppColors.darkShadowColor
+                                    : AppColors.lightShadowColor,
                             blurRadius: 20,
                             offset: const Offset(0, 8),
                             spreadRadius: 0,
@@ -113,25 +113,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         child: Icon(
                           Icons.account_balance_wallet_outlined,
                           size: 48,
-                          color: AppTheme.white,
+                          color: AppColors.white,
                         ),
                       ),
                     ),
                     const SizedBox(height: 32),
                     Text(
                       'Spending & Income',
-                      style: AppTheme.getHeadingStyle(
+                      style: AppThemeHelpers.getHeadingStyle(
                         isDark,
                       ).copyWith(letterSpacing: -0.5),
                     ),
                     const SizedBox(height: 12),
                     Text(
                       'Track your finances with ease',
-                      style: AppTheme.getBodyStyle(isDark).copyWith(
+                      style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkSecondaryText
-                                : AppTheme.lightSecondaryText,
+                                ? AppColors.darkSecondaryText
+                                : AppColors.lightSecondaryText,
                       ),
                     ),
                     const SizedBox(height: 48),
@@ -139,7 +139,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       width: 24,
                       height: 24,
                       child: CircularProgressIndicator(
-                        color: AppTheme.getPrimaryColor(isDark),
+                        color: AppThemeHelpers.getPrimaryColor(isDark),
                         strokeWidth: 2,
                       ),
                     ),
@@ -153,3 +153,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
     );
   }
 }
+
+
+

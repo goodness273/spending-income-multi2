@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:spending_income/models/transaction.dart';
 import 'package:uuid/uuid.dart';
-import '../../../utils/app_theme.dart';
+import '../../../utils/app_theme/colors.dart';
+import '../../../utils/app_theme/helpers.dart';
 
 class AiChatInterface extends StatefulWidget {
   final List<Map<String, String>> chatMessages;
@@ -45,7 +46,7 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
         Flexible(
           child: Container(
             decoration: BoxDecoration(
-              border: Border.all(color: AppTheme.getDividerColor(isDarkMode)),
+              border: Border.all(color: AppThemeHelpers.getDividerColor(isDarkMode)),
               borderRadius: BorderRadius.circular(12),
             ),
             margin: const EdgeInsets.only(bottom: 12),
@@ -137,8 +138,8 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
               IconButton(
                 icon: const Icon(Icons.send),
                 style: IconButton.styleFrom(
-                  backgroundColor: AppTheme.getPrimaryColor(isDarkMode),
-                  foregroundColor: isDarkMode ? AppTheme.primaryBlack : AppTheme.white,
+                  backgroundColor: AppThemeHelpers.getPrimaryColor(isDarkMode),
+                  foregroundColor: isDarkMode ? AppColors.primaryBlack : AppColors.white,
                 ),
                 onPressed: widget.isAiProcessing ? null : _handleSend,
               ),
@@ -210,18 +211,21 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       decoration: BoxDecoration(
         color: isUser 
-            ? AppTheme.getPrimaryColor(isDarkMode)
-            : (isDarkMode ? AppTheme.darkCardBackground : AppTheme.lightGray),
+            ? AppThemeHelpers.getPrimaryColor(isDarkMode)
+            : (isDarkMode ? AppColors.darkCardBackground : AppColors.lightGray),
         borderRadius: BorderRadius.circular(16),
       ),
       child: Text(
         message,
         style: TextStyle(
           color: isUser 
-              ? (isDarkMode ? AppTheme.darkPrimaryText : AppTheme.white)
-              : AppTheme.getPrimaryTextColor(isDarkMode),
+              ? (isDarkMode ? AppColors.darkPrimaryText : AppColors.white)
+              : AppThemeHelpers.getPrimaryTextColor(isDarkMode),
         ),
       ),
     );
   }
 }
+
+
+

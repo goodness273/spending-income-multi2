@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'firebase_options.dart';
 import 'screens/splash_screen.dart';
-import 'utils/app_theme.dart';
+import 'utils/app_theme/theme_builder.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,10 +18,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Spending & Income Tracker',
-      theme: AppTheme.buildLightTheme(),
-      darkTheme: AppTheme.buildDarkTheme(),
+      theme: AppThemeBuilder.buildLightTheme(),
+      darkTheme: AppThemeBuilder.buildDarkTheme(),
       themeMode: ThemeMode.system, // Respect device theme settings
       home: const SplashScreen(),
     );
   }
 }
+
+
+

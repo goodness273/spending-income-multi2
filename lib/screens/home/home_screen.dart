@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../providers/auth_provider.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 import '../../models/transaction.dart';
 import '../../providers/transaction_provider.dart';
 import '../transactions/add_transaction/add_transaction_modal.dart';
@@ -12,134 +12,6 @@ import 'dashboard_screen.dart';
 import '../transactions/transactions_screen.dart';
 import 'analytics_screen.dart';
 import 'profile_screen.dart';
-
-// Placeholder screens
-class DashboardScreen extends StatelessWidget {
-  const DashboardScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.dashboard_outlined,
-            size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
-          ),
-          const SizedBox(height: 24),
-          Text('Dashboard', style: AppTheme.getSubheadingStyle(isDark)),
-          const SizedBox(height: 8),
-          Text('Coming Soon', style: AppTheme.getBodyStyle(isDark)),
-        ],
-      ),
-    );
-  }
-}
-
-class TransactionsScreen extends StatelessWidget {
-  const TransactionsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.swap_horiz_outlined,
-            size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
-          ),
-          const SizedBox(height: 24),
-          Text('Transactions', style: AppTheme.getSubheadingStyle(isDark)),
-          const SizedBox(height: 8),
-          Text('Coming Soon', style: AppTheme.getBodyStyle(isDark)),
-        ],
-      ),
-    );
-  }
-}
-
-class ProfileScreen extends ConsumerWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.person_outline,
-            size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
-          ),
-          const SizedBox(height: 24),
-          Text('Profile', style: AppTheme.getSubheadingStyle(isDark)),
-          const SizedBox(height: 8),
-          Text('Coming Soon', style: AppTheme.getBodyStyle(isDark)),
-          const SizedBox(height: 40),
-          SizedBox(
-            width: 140,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                ref.read(authNotifierProvider.notifier).signOut();
-              },
-              icon: const Icon(Icons.logout, size: 18),
-              label: const Text('Sign Out'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor:
-                    isDark
-                        ? AppTheme.darkCardBackground
-                        : AppTheme.lightBackground,
-                foregroundColor: AppTheme.getPrimaryColor(isDark),
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: AppTheme.getPrimaryColor(isDark).withAlpha(77),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class AnalyticsScreen extends StatelessWidget {
-  const AnalyticsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.analytics_outlined,
-            size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
-          ),
-          const SizedBox(height: 24),
-          Text('Analytics', style: AppTheme.getSubheadingStyle(isDark)),
-          const SizedBox(height: 8),
-          Text('Coming Soon', style: AppTheme.getBodyStyle(isDark)),
-        ],
-      ),
-    );
-  }
-}
 
 /// HomeScreen acts as the main navigation container using a
 /// custom BottomAppBar with a centered FloatingActionButton.
@@ -197,16 +69,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     // Determine theme-specific colors for navigation elements
-    final Color selectedItemColor = AppTheme.getPrimaryColor(isDarkMode);
+    final Color selectedItemColor = AppThemeHelpers.getPrimaryColor(isDarkMode);
     // Using mediumGray for unselected items as it matched the light theme image
-    const Color unselectedItemColor = AppTheme.mediumGray;
+    const Color unselectedItemColor = AppColors.mediumGray;
     // FAB colors are inverted: Black on Light, White on Dark
-    final Color fabBackgroundColor = isDarkMode ? AppTheme.white : AppTheme.primaryBlack;
-    final Color fabIconColor = isDarkMode ? AppTheme.primaryBlack : AppTheme.white;
+    final Color fabBackgroundColor = isDarkMode ? AppColors.white : AppColors.primaryBlack;
+    final Color fabIconColor = isDarkMode ? AppColors.primaryBlack : AppColors.white;
     // BottomAppBar background matches the main screen background
-    final Color bottomAppBarColor = AppTheme.getBackgroundColor(isDarkMode);
-    // Use a consistent subtle shadow
-    final Color shadowColor = isDarkMode ? AppTheme.darkShadowColor.withOpacity(0.3) : AppTheme.lightShadowColor.withOpacity(0.5);
+    final Color bottomAppBarColor = AppThemeHelpers.getBackgroundColor(isDarkMode);
 
     return Scaffold(
       // Body displays the currently selected screen using IndexedStack
@@ -239,7 +109,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
         padding: EdgeInsets.zero,
-        child: Container(
+        child: SizedBox(
           height: 65.0, // Slightly taller to accommodate labels
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -343,3 +213,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 }
+
+
+

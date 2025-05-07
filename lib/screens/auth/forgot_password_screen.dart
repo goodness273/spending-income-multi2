@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/auth_error_handler.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 // import '../../utils/ui_components.dart'; // Removing dependency
 
 class ForgotPasswordScreen extends ConsumerStatefulWidget {
@@ -72,9 +72,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
         title: const Text('Forgot password?'), // Match inspiration title
         centerTitle: false,
         elevation: 0,
-        backgroundColor: AppTheme.getBackgroundColor(isDark),
+        backgroundColor: AppThemeHelpers.getBackgroundColor(isDark),
       ),
-      backgroundColor: AppTheme.getBackgroundColor(isDark),
+      backgroundColor: AppThemeHelpers.getBackgroundColor(isDark),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -91,7 +91,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   // Title
                   Text(
                     'Forgot password?',
-                    style: AppTheme.getHeadingStyle(
+                    style: AppThemeHelpers.getHeadingStyle(
                       isDark,
                     ).copyWith(fontSize: 32),
                     textAlign: TextAlign.left,
@@ -100,7 +100,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   // Subtitle/Description from inspiration
                   Text(
                     'Don\'t worry! It happens. Please enter the email address associated with your account.',
-                    style: AppTheme.getBodyStyle(isDark),
+                    style: AppThemeHelpers.getBodyStyle(isDark),
                     textAlign: TextAlign.left,
                   ),
                   const SizedBox(height: 32),
@@ -108,25 +108,25 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   // Email field with Label
                   Text(
                     'Email address', // Label text
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _emailController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText: 'Enter your email address',
                       prefixIcon: null,
                     ).copyWith(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ),
                     ),
                     keyboardType: TextInputType.emailAddress,
@@ -153,9 +153,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                           color:
                               _isSuccess
                                   ? (isDark
-                                      ? AppTheme.accentGreenDark
-                                      : AppTheme
-                                          .accentGreen) // Use theme success color
+                                      ? AppColors.accentGreenDark
+                                      : AppColors.accentGreen) // Use theme success color
                                   : (isDark
                                       ? Colors.red.shade300
                                       : Colors.red.shade700),
@@ -170,21 +169,21 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _resetPassword,
-                      style: AppTheme.getPrimaryButtonStyle(context),
+                      style: AppButtonStyles.getPrimaryButtonStyle(context),
                       child: _isLoading
                           ? SizedBox(
                               width: 24,
                               height: 24,
                               child: CircularProgressIndicator(
-                                color: isDark ? AppTheme.primaryBlack : AppTheme.white, // Ensure correct contrast
+                                color: isDark ? AppColors.primaryBlack : AppColors.white, // Ensure correct contrast
                                 strokeWidth: 2,
                               ),
                             )
                           : Text(
                               'Send link', // Match inspiration text
-                              style: AppTheme.getBodyStyle(isDark).copyWith(
+                              style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                                 fontWeight: FontWeight.w500,
-                                color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+                                color: isDark ? AppColors.primaryBlack : AppColors.white,
                               ),
                             ),
                     ),
@@ -196,7 +195,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                     children: [
                       Text(
                         'Remember password?',
-                        style: AppTheme.getBodyStyle(
+                        style: AppThemeHelpers.getBodyStyle(
                           isDark,
                         ).copyWith(fontSize: 14),
                       ),
@@ -204,17 +203,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        style: AppTheme.getTextButtonStyle(context).copyWith(
+                        style: AppButtonStyles.getTextButtonStyle(context).copyWith(
                           padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(horizontal: 4.0),
                           ),
                         ),
                         child: Text(
                           'Log in',
-                          style: AppTheme.getBodyStyle(isDark).copyWith(
+                          style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.getPrimaryColor(isDark),
+                            color: AppThemeHelpers.getPrimaryColor(isDark),
                           ),
                         ),
                       ),
@@ -230,3 +229,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     );
   }
 }
+
+
+

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/auth_error_handler.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 import '../../providers/preferences_provider.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
@@ -160,11 +160,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         centerTitle:
             false, // Align title left as per inspiration? No title shown, let's remove it maybe? Or keep for context. Let's keep AppBar for back nav.
         elevation: 0,
-        backgroundColor: AppTheme.getBackgroundColor(
+        backgroundColor: AppThemeHelpers.getBackgroundColor(
           isDark,
         ), // Match background
       ),
-      backgroundColor: AppTheme.getBackgroundColor(
+      backgroundColor: AppThemeHelpers.getBackgroundColor(
         isDark,
       ), // Ensure scaffold matches AppBar
       body: SafeArea(
@@ -185,7 +185,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   //   alignment: Alignment.topRight,
                   //   child: Icon(
                   //     Icons.star_border, // Placeholder for the star icon
-                  //     color: AppTheme.getPrimaryTextColor(isDark).withOpacity(0.5),
+                  //     color: AppThemeHelpers.getPrimaryTextColor(isDark).withOpacity(0.5),
                   //     size: 32,
                   //   ),
                   // ),
@@ -194,7 +194,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Title
                   Text(
                     'Log in', // Using the AppBar title now, so maybe remove this? Inspiration has it large. Let's keep it large.
-                    style: AppTheme.getHeadingStyle(
+                    style: AppThemeHelpers.getHeadingStyle(
                       isDark,
                     ).copyWith(fontSize: 32), // Larger title
                     textAlign: TextAlign.left, // Left align title
@@ -202,22 +202,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Optional Subtitle/Description
                   // Text(
                   //   'Welcome back', // Kept from previous version
-                  //   style: AppTheme.getBodyStyle(isDark),
+                  //   style: AppThemeHelpers.getBodyStyle(isDark),
                   //   textAlign: TextAlign.center,
                   // ),
                   const SizedBox(height: 32), // Increased spacing
                   // Email field with Label
                   Text(
                     'Email address', // Label text
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _emailController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText:
                           'Enter your email address', // Use labelText as hint
@@ -226,11 +226,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       floatingLabelBehavior:
                           FloatingLabelBehavior
                               .never, // Prevent label from floating
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ), // Style hint
                     ),
                     keyboardType: TextInputType.emailAddress,
@@ -250,15 +250,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   // Password field with Label
                   Text(
                     'Password', // Label text
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText: 'Enter your password', // Use labelText as hint
                       prefixIcon: null, // Remove prefix icon
@@ -270,8 +270,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               : Icons.visibility_outlined,
                           color:
                               isDark
-                                  ? AppTheme.darkTertiaryText
-                                  : AppTheme.lightTertiaryText,
+                                  ? AppColors.darkTertiaryText
+                                  : AppColors.lightTertiaryText,
                           size: 20,
                         ),
                         onPressed: () {
@@ -284,11 +284,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       floatingLabelBehavior:
                           FloatingLabelBehavior
                               .never, // Prevent label from floating
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ), // Style hint
                     ),
                     obscureText: _obscurePassword,
@@ -317,11 +317,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                 _rememberMe = value ?? false;
                               });
                             },
-                            activeColor: AppTheme.getPrimaryColor(isDark),
+                            activeColor: AppThemeHelpers.getPrimaryColor(isDark),
                           ),
                           Text(
                             'Remember me',
-                            style: AppTheme.getSmallStyle(isDark).copyWith(
+                            style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -337,7 +337,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           );
                         },
-                        style: AppTheme.getTextButtonStyle(context).copyWith(
+                        style: AppButtonStyles.getTextButtonStyle(context).copyWith(
                           // Use theme style
                           padding: WidgetStateProperty.all(
                             EdgeInsets.zero,
@@ -345,8 +345,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: Text(
                           'Forgot password?',
-                          style: AppTheme.getSmallStyle(isDark).copyWith(
-                            color: AppTheme.getPrimaryColor(isDark),
+                          style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                            color: AppThemeHelpers.getPrimaryColor(isDark),
                             fontWeight: FontWeight.w500,
                           ), // Match inspiration style
                         ),
@@ -371,7 +371,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _login,
-                      style: AppTheme.getPrimaryButtonStyle(
+                      style: AppButtonStyles.getPrimaryButtonStyle(
                         context,
                       ), // Use theme style
                       child:
@@ -386,12 +386,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               )
                               : Text(
                                 'Log in',
-                                style: AppTheme.getBodyStyle(isDark).copyWith(
+                                style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                                   fontWeight: FontWeight.w500,
                                   color:
                                       isDark
-                                          ? AppTheme.primaryBlack
-                                          : AppTheme.white,
+                                          ? AppColors.primaryBlack
+                                          : AppColors.white,
                                 ),
                               ), // Match inspiration text, ensure contrast
                     ),
@@ -401,17 +401,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Divider(color: AppTheme.getDividerColor(isDark)),
+                        child: Divider(color: AppThemeHelpers.getDividerColor(isDark)),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
                           'Or Log in with',
-                          style: AppTheme.getSmallStyle(isDark),
+                          style: AppThemeHelpers.getSmallStyle(isDark),
                         ),
                       ),
                       Expanded(
-                        child: Divider(color: AppTheme.getDividerColor(isDark)),
+                        child: Divider(color: AppThemeHelpers.getDividerColor(isDark)),
                       ),
                     ],
                   ),
@@ -422,7 +422,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       // Google Sign In Button
                       OutlinedButton(
                         onPressed: _isGoogleLoading || _isAppleLoading ? null : _signInWithGoogle,
-                        style: AppTheme.getOutlinedSocialButtonStyle(context),
+                        style: AppButtonStyles.getOutlinedSocialButtonStyle(context),
                         child: _isGoogleLoading
                             ? const SizedBox(
                                 height: 24.0,
@@ -437,7 +437,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       if (Platform.isIOS || Platform.isMacOS)
                         OutlinedButton(
                           onPressed: _isGoogleLoading || _isAppleLoading ? null : _signInWithApple,
-                          style: AppTheme.getOutlinedSocialButtonStyle(context).copyWith(
+                          style: AppButtonStyles.getOutlinedSocialButtonStyle(context).copyWith(
                              backgroundColor: WidgetStateProperty.resolveWith<Color?>((states) {
                                 return Theme.of(context).brightness == Brightness.dark ? Colors.white : Colors.black;
                              }),
@@ -473,7 +473,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     children: [
                       Text(
                         "Don't have an account?",
-                        style: AppTheme.getBodyStyle(
+                        style: AppThemeHelpers.getBodyStyle(
                           isDark,
                         ).copyWith(fontSize: 14), // Use theme style
                       ),
@@ -487,7 +487,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             ),
                           );
                         },
-                        style: AppTheme.getTextButtonStyle(context).copyWith(
+                        style: AppButtonStyles.getTextButtonStyle(context).copyWith(
                           // Use theme style
                           padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(horizontal: 4.0),
@@ -495,11 +495,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                         child: Text(
                           'Sign up',
-                          style: AppTheme.getBodyStyle(isDark).copyWith(
+                          style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                             // Use theme style
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.getPrimaryColor(isDark),
+                            color: AppThemeHelpers.getPrimaryColor(isDark),
                           ),
                         ),
                       ),
@@ -515,3 +515,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     );
   }
 }
+
+
+

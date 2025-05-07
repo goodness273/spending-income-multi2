@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 
 class OnboardingPageData {
   final String title;
@@ -50,7 +50,7 @@ class OnboardingPage extends StatelessWidget {
           // Title
           Text(
             data.title,
-            style: AppTheme.getHeadingStyle(isDark).copyWith(
+            style: AppThemeHelpers.getHeadingStyle(isDark).copyWith(
               fontSize: 26,
               fontWeight: FontWeight.w600,
               letterSpacing: -0.5,
@@ -65,7 +65,7 @@ class OnboardingPage extends StatelessWidget {
             constraints: const BoxConstraints(maxWidth: 320),
             child: Text(
               data.description,
-              style: AppTheme.getBodyStyle(
+              style: AppThemeHelpers.getBodyStyle(
                 isDark,
               ).copyWith(height: 1.5, fontSize: 16),
               textAlign: TextAlign.center,
@@ -76,3 +76,6 @@ class OnboardingPage extends StatelessWidget {
     );
   }
 }
+
+
+

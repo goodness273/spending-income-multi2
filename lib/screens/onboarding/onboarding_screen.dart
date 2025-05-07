@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 import '../auth/auth_wrapper.dart';
 import '../../providers/preferences_provider.dart';
 import 'onboarding_page.dart';
@@ -37,21 +37,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         description:
             'Easily record and categorize your income and expenses with just a few taps.',
         image: Icons.account_balance_wallet_outlined,
-        backgroundColor: AppTheme.getPrimaryColor(isDark),
+        backgroundColor: AppThemeHelpers.getPrimaryColor(isDark),
       ),
       OnboardingPageData(
         title: 'Visualize Your Spending',
         description:
             'See where your money goes with beautiful charts and detailed reports.',
         image: Icons.pie_chart_outline,
-        backgroundColor: AppTheme.getPrimaryColor(isDark),
+        backgroundColor: AppThemeHelpers.getPrimaryColor(isDark),
       ),
       OnboardingPageData(
         title: 'Reach Your Goals',
         description:
             'Set budgets and financial goals to help you save and stay on track.',
         image: Icons.emoji_events_outlined,
-        backgroundColor: AppTheme.getPrimaryColor(isDark),
+        backgroundColor: AppThemeHelpers.getPrimaryColor(isDark),
       ),
     ];
   }
@@ -85,7 +85,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.getBackgroundColor(isDark),
+      backgroundColor: AppThemeHelpers.getBackgroundColor(isDark),
       body: SafeArea(
         child: Column(
           children: [
@@ -97,7 +97,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 child: TextButton(
                   onPressed: _completeOnboarding,
                   style: TextButton.styleFrom(
-                    foregroundColor: AppTheme.getPrimaryColor(isDark),
+                    foregroundColor: AppThemeHelpers.getPrimaryColor(isDark),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
                       vertical: 8,
@@ -148,7 +148,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           borderRadius: BorderRadius.circular(4),
                           color:
                               _currentPage == index
-                                  ? AppTheme.getPrimaryColor(isDark)
+                                  ? AppThemeHelpers.getPrimaryColor(isDark)
                                   : (isDark
                                       ? Colors.grey.shade700
                                       : Colors.grey.shade300),
@@ -190,3 +190,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 }
+
+
+

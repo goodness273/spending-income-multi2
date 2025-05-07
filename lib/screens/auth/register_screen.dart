@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../providers/auth_provider.dart';
 import '../../utils/auth_error_handler.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 // import '../../utils/ui_components.dart'; // Removing dependency on UIComponents
 // Import platform check
 import 'dart:io' show Platform;
@@ -137,9 +137,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         title: const Text('Sign up'), // Updated title to match inspiration
         centerTitle: false,
         elevation: 0,
-        backgroundColor: AppTheme.getBackgroundColor(isDark),
+        backgroundColor: AppThemeHelpers.getBackgroundColor(isDark),
       ),
-      backgroundColor: AppTheme.getBackgroundColor(isDark),
+      backgroundColor: AppThemeHelpers.getBackgroundColor(isDark),
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -156,7 +156,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Title
                   Text(
                     'Sign up', // Consistent with AppBar title
-                    style: AppTheme.getHeadingStyle(
+                    style: AppThemeHelpers.getHeadingStyle(
                       isDark,
                     ).copyWith(fontSize: 32),
                     textAlign: TextAlign.left,
@@ -166,25 +166,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Name field with Label
                   Text(
                     'Name', // Label text
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _nameController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText: 'Enter your name',
                       prefixIcon: null, // Remove icon
                     ).copyWith(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ),
                     ),
                     validator: (value) {
@@ -199,25 +199,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Email field with Label
                   Text(
                     'Email', // Label text
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _emailController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText: 'Enter your email address',
                       prefixIcon: null, // Remove icon
                     ).copyWith(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ),
                     ),
                     keyboardType: TextInputType.emailAddress,
@@ -238,15 +238,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Password field with Label
                   Text(
                     'Create a password', // Label text from inspiration
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _passwordController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText:
                           'must be 8 characters', // Hint text from inspiration
@@ -259,8 +259,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : Icons.visibility_outlined,
                           color:
                               isDark
-                                  ? AppTheme.darkTertiaryText
-                                  : AppTheme.lightTertiaryText,
+                                  ? AppColors.darkTertiaryText
+                                  : AppColors.lightTertiaryText,
                           size: 20,
                         ),
                         onPressed: () {
@@ -271,11 +271,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ).copyWith(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ),
                     ),
                     obscureText: _obscurePassword,
@@ -295,15 +295,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   // Confirm Password field with Label
                   Text(
                     'Confirm password', // Label text from inspiration
-                    style: AppTheme.getSmallStyle(isDark).copyWith(
-                      color: AppTheme.getSecondaryTextColor(isDark),
+                    style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
+                      color: AppThemeHelpers.getSecondaryTextColor(isDark),
                       fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _confirmPasswordController,
-                    decoration: AppTheme.getInputDecoration(
+                    decoration: AppThemeHelpers.getInputDecoration(
                       context: context,
                       labelText:
                           'repeat password', // Hint text from inspiration
@@ -316,8 +316,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               : Icons.visibility_outlined,
                           color:
                               isDark
-                                  ? AppTheme.darkTertiaryText
-                                  : AppTheme.lightTertiaryText,
+                                  ? AppColors.darkTertiaryText
+                                  : AppColors.lightTertiaryText,
                           size: 20,
                         ),
                         onPressed: () {
@@ -328,11 +328,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       ),
                     ).copyWith(
                       floatingLabelBehavior: FloatingLabelBehavior.never,
-                      labelStyle: AppTheme.getBodyStyle(isDark).copyWith(
+                      labelStyle: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                         color:
                             isDark
-                                ? AppTheme.darkTertiaryText
-                                : AppTheme.lightTertiaryText,
+                                ? AppColors.darkTertiaryText
+                                : AppColors.lightTertiaryText,
                       ),
                     ),
                     obscureText: _obscureConfirmPassword,
@@ -364,7 +364,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     height: 52,
                     child: ElevatedButton(
                       onPressed: _isLoading ? null : _register,
-                      style: AppTheme.getPrimaryButtonStyle(context), // Use theme primary style
+                      style: AppButtonStyles.getPrimaryButtonStyle(context), // Use theme primary style
                       child: _isLoading
                           ? const SizedBox(
                               width: 24, // Consistent size
@@ -376,9 +376,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             )
                           : Text(
                               'Sign up', // Match button text to inspiration
-                              style: AppTheme.getBodyStyle(isDark).copyWith(
+                              style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                                 fontWeight: FontWeight.w500,
-                                color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+                                color: isDark ? AppColors.primaryBlack : AppColors.white,
                               ),
                             ),
                     ),
@@ -389,17 +389,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                   Row(
                     children: [
                       Expanded(
-                        child: Divider(color: AppTheme.getDividerColor(isDark)),
+                        child: Divider(color: AppThemeHelpers.getDividerColor(isDark)),
                       ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16.0),
                         child: Text(
                           'Or Sign up with',
-                          style: AppTheme.getSmallStyle(isDark),
+                          style: AppThemeHelpers.getSmallStyle(isDark),
                         ),
                       ),
                       Expanded(
-                        child: Divider(color: AppTheme.getDividerColor(isDark)),
+                        child: Divider(color: AppThemeHelpers.getDividerColor(isDark)),
                       ),
                     ],
                   ),
@@ -410,7 +410,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       // Google Sign In Button
                       OutlinedButton(
                         onPressed: _isGoogleLoading || _isAppleLoading ? null : _signUpWithGoogle,
-                        style: AppTheme.getSecondaryButtonStyle(
+                        style: AppButtonStyles.getSecondaryButtonStyle(
                           context,
                         ), // Use secondary style
                         child: _isGoogleLoading
@@ -431,11 +431,11 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       if (Platform.isIOS || Platform.isMacOS)
                         OutlinedButton(
                           onPressed: _isGoogleLoading || _isAppleLoading ? null : _signUpWithApple,
-                          style: AppTheme.getSecondaryButtonStyle(
+                          style: AppButtonStyles.getSecondaryButtonStyle(
                             context,
                           ).copyWith(
                             foregroundColor: WidgetStateProperty.all(
-                              AppTheme.getPrimaryTextColor(isDark),
+                              AppThemeHelpers.getPrimaryTextColor(isDark),
                             ),
                           ),
                           child: _isAppleLoading
@@ -445,14 +445,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2.0,
                                     valueColor: AlwaysStoppedAnimation<Color>(
-                                      AppTheme.getPrimaryTextColor(isDark),
+                                      AppThemeHelpers.getPrimaryTextColor(isDark),
                                     ),
                                   ),
                                 )
                               : Icon(
                                   Icons.apple,
                                   size: 28.0,
-                                  color: AppTheme.getPrimaryTextColor(isDark),
+                                  color: AppThemeHelpers.getPrimaryTextColor(isDark),
                                 ),
                         ),
                     ],
@@ -466,7 +466,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     children: [
                       Text(
                         'Already have an account?',
-                        style: AppTheme.getBodyStyle(
+                        style: AppThemeHelpers.getBodyStyle(
                           isDark,
                         ).copyWith(fontSize: 14),
                       ),
@@ -474,17 +474,17 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         onPressed: () {
                           Navigator.pop(context);
                         },
-                        style: AppTheme.getTextButtonStyle(context).copyWith(
+                        style: AppButtonStyles.getTextButtonStyle(context).copyWith(
                           padding: WidgetStateProperty.all(
                             const EdgeInsets.symmetric(horizontal: 4.0),
                           ),
                         ),
                         child: Text(
                           'Log in',
-                          style: AppTheme.getBodyStyle(isDark).copyWith(
+                          style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
-                            color: AppTheme.getPrimaryColor(isDark),
+                            color: AppThemeHelpers.getPrimaryColor(isDark),
                           ),
                         ),
                       ),
@@ -500,3 +500,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 }
+
+
+

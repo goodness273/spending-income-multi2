@@ -17,3 +17,6 @@ const List<String> defaultSpendingCategories = [
 const List<String> defaultIncomeCategories = [
   'Salary', 'Freelance', 'Investment', 'Gift', 'Other'
 ]; 
+
+
+

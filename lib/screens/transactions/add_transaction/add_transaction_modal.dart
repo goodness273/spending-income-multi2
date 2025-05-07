@@ -7,7 +7,7 @@ import 'package:spending_income/screens/transactions/add_transaction/manual_form
 import 'package:spending_income/screens/transactions/add_transaction/transaction_method_selector.dart';
 import 'package:spending_income/screens/transactions/add_transaction/transaction_models.dart';
 import 'package:spending_income/services/gemini_service.dart';
-import 'package:spending_income/utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/helpers.dart';
 import 'package:uuid/uuid.dart';
 
 class AddTransactionModal extends StatefulWidget {
@@ -146,7 +146,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                 height: 5,
                 margin: const EdgeInsets.only(bottom: 10),
                 decoration: BoxDecoration(
-                  color: AppTheme.getDividerColor(isDarkMode),
+                  color: AppThemeHelpers.getDividerColor(isDarkMode),
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
@@ -235,9 +235,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     // Wrap in a Card with clear bounds and no extra scrolling
     return Container(
       decoration: BoxDecoration(
-        color: AppTheme.getCardColor(isDarkMode),
+        color: AppThemeHelpers.getCardColor(isDarkMode),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.getDividerColor(isDarkMode), width: 0.5),
+        border: Border.all(color: AppThemeHelpers.getDividerColor(isDarkMode), width: 0.5),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -506,3 +506,6 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     super.dispose();
   }
 }
+
+
+

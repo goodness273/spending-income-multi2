@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../../utils/app_theme.dart';
+import '../../../utils/app_theme/colors.dart';
+import '../../../utils/app_theme/helpers.dart';
 import 'transaction_models.dart';
 
 class TransactionMethodSelector extends StatelessWidget {
@@ -28,11 +29,11 @@ class TransactionMethodSelector extends StatelessWidget {
           );
         },
         borderRadius: BorderRadius.circular(8),
-        selectedColor: isDarkMode ? AppTheme.primaryBlack : AppTheme.white,
-        color: AppTheme.getPrimaryTextColor(isDarkMode),
-        fillColor: AppTheme.getPrimaryColor(isDarkMode),
-        borderColor: AppTheme.getPrimaryColor(isDarkMode).withOpacity(0.5),
-        selectedBorderColor: AppTheme.getPrimaryColor(isDarkMode),
+        selectedColor: isDarkMode ? AppColors.primaryBlack : AppColors.white,
+        color: AppThemeHelpers.getPrimaryTextColor(isDarkMode),
+        fillColor: AppThemeHelpers.getPrimaryColor(isDarkMode),
+        borderColor: AppThemeHelpers.getPrimaryColor(isDarkMode).withOpacity(0.5),
+        selectedBorderColor: AppThemeHelpers.getPrimaryColor(isDarkMode),
         constraints: const BoxConstraints(minHeight: 40.0, minWidth: 120.0),
         children: const [
           Padding(
@@ -62,3 +63,6 @@ class TransactionMethodSelector extends StatelessWidget {
     );
   }
 } 
+
+
+

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import 'package:spending_income/models/transaction.dart';
-import '../../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/colors.dart';
+import 'package:spending_income/utils/app_theme/helpers.dart';
+import 'package:spending_income/utils/app_theme/button_styles.dart';
+import 'package:spending_income/utils/app_theme/text_styles.dart';
 import 'transaction_models.dart';
 
 class ManualFormInterface extends StatefulWidget {
@@ -58,7 +61,7 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
                 padding: const EdgeInsets.only(bottom: 20.0),
                 child: Text(
                   'Review & Confirm Transaction', 
-                  style: AppTheme.getTitleStyle(isDarkMode), 
+                  style: AppThemeHelpers.getTitleStyle(isDarkMode), 
                   textAlign: TextAlign.center
                 ),
               ),
@@ -88,6 +91,14 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               ),
+              dropdownColor: isDarkMode ? AppColors.darkCardBackground : AppColors.white,
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: isDarkMode ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+              ),
+              style: isDarkMode ? AppTextStyles.darkBodyStyle : AppTextStyles.lightBodyStyle,
+              itemHeight: 48,
+              borderRadius: BorderRadius.circular(12),
               items: TransactionType.values.map((type) {
                 return DropdownMenuItem(
                   value: type,
@@ -109,6 +120,14 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                 contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               ),
+              dropdownColor: isDarkMode ? AppColors.darkCardBackground : AppColors.white,
+              icon: Icon(
+                Icons.arrow_drop_down,
+                color: isDarkMode ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+              ),
+              style: isDarkMode ? AppTextStyles.darkBodyStyle : AppTextStyles.lightBodyStyle,
+              itemHeight: 48,
+              borderRadius: BorderRadius.circular(12),
               hint: const Text('Select a category'),
               items: categories.map((category) {
                 return DropdownMenuItem(
@@ -173,7 +192,7 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
             ElevatedButton.icon(
               icon: Icon(widget.isReviewingAi ? Icons.check_circle_outline : Icons.save_alt_outlined),
               label: Text(widget.isReviewingAi ? 'Confirm & Save' : 'Save Transaction'),
-              style: AppTheme.getPrimaryButtonStyle(context),
+              style: AppButtonStyles.getPrimaryButtonStyle(context),
               onPressed: () {
                 if (widget.formKey.currentState!.validate()) {
                   // The parent will handle the save operation
@@ -212,3 +231,6 @@ class _ManualFormInterfaceState extends State<ManualFormInterface> {
     );
   }
 }
+
+
+

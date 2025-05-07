@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
-import 'app_theme.dart';
+import 'app_theme/colors.dart';
+import 'app_theme/text_styles.dart';
+import 'app_theme/helpers.dart';
+import 'app_theme/button_styles.dart';
 
 /// Provides reusable UI components for consistent appearance across the app
 class UIComponents {
@@ -10,7 +13,7 @@ class UIComponents {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: CircularProgressIndicator(
-        color: isDark ? AppTheme.accentYellow : AppTheme.primaryBlack,
+        color: isDark ? AppColors.accentYellow : AppColors.primaryBlack,
       ),
     );
   }
@@ -34,7 +37,7 @@ class UIComponents {
             const SizedBox(height: 16),
             Text(
               message,
-              style: (isDark ? AppTheme.darkBodyStyle : AppTheme.lightBodyStyle)
+              style: (isDark ? AppTextStyles.darkBodyStyle : AppTextStyles.lightBodyStyle)
                   .copyWith(color: errorColor),
               textAlign: TextAlign.center,
             ),
@@ -66,7 +69,7 @@ class UIComponents {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor =
-        isDark ? AppTheme.darkSecondaryText : AppTheme.lightSecondaryText;
+        isDark ? AppColors.darkSecondaryText : AppColors.lightSecondaryText;
 
     return Center(
       child: Padding(
@@ -78,7 +81,7 @@ class UIComponents {
             const SizedBox(height: 16),
             Text(
               message,
-              style: (isDark ? AppTheme.darkBodyStyle : AppTheme.lightBodyStyle)
+              style: (isDark ? AppTextStyles.darkBodyStyle : AppTextStyles.lightBodyStyle)
                   .copyWith(color: textColor),
               textAlign: TextAlign.center,
             ),
@@ -86,7 +89,7 @@ class UIComponents {
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: onAction,
-                style: AppTheme.getPrimaryButtonStyle(context),
+                style: AppButtonStyles.getPrimaryButtonStyle(context),
                 child: Text(actionLabel),
               ),
             ],
@@ -116,26 +119,26 @@ class UIComponents {
             borderRadius: BorderRadius.circular(16),
           ),
           backgroundColor:
-              isDark ? AppTheme.darkCardBackground : AppTheme.white,
+              isDark ? AppColors.darkCardBackground : AppColors.white,
           title: Text(
             title,
-            style: isDark ? AppTheme.darkTitleStyle : AppTheme.lightTitleStyle,
+            style: isDark ? AppTextStyles.darkTitleStyle : AppTextStyles.lightTitleStyle,
           ),
           content: Text(
             message,
-            style: isDark ? AppTheme.darkBodyStyle : AppTheme.lightBodyStyle,
+            style: isDark ? AppTextStyles.darkBodyStyle : AppTextStyles.lightBodyStyle,
           ),
           actions: [
             if (cancelText != null)
               TextButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                style: AppTheme.getTextButtonStyle(context),
+                style: AppButtonStyles.getTextButtonStyle(context),
                 child: Text(cancelText),
               ),
             if (confirmText != null)
               ElevatedButton(
                 onPressed: () => Navigator.of(context).pop(true),
-                style: AppTheme.getPrimaryButtonStyle(context),
+                style: AppButtonStyles.getPrimaryButtonStyle(context),
                 child: Text(confirmText),
               ),
           ],
@@ -218,18 +221,18 @@ class UIComponents {
       title: Text(
         title,
         style: TextStyle(
-          color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+          color: isDark ? AppColors.primaryBlack : AppColors.white,
           fontWeight: FontWeight.bold,
         ),
       ),
-      backgroundColor: isDark ? AppTheme.white : AppTheme.primaryBlack,
-      foregroundColor: isDark ? AppTheme.primaryBlack : AppTheme.white,
+      backgroundColor: isDark ? AppColors.white : AppColors.primaryBlack,
+      foregroundColor: isDark ? AppColors.primaryBlack : AppColors.white,
       centerTitle: centerTitle,
       actions: actions,
       leading: IconButton(
         icon: Icon(
           Icons.arrow_back,
-          color: isDark ? AppTheme.primaryBlack : AppTheme.white,
+          color: isDark ? AppColors.primaryBlack : AppColors.white,
         ),
         onPressed: () => Navigator.of(context).pop(),
       ),
@@ -245,8 +248,8 @@ class UIComponents {
         title,
         style:
             isDark
-                ? AppTheme.darkSubheadingStyle
-                : AppTheme.lightSubheadingStyle,
+                ? AppTextStyles.darkSubheadingStyle
+                : AppTextStyles.lightSubheadingStyle,
       ),
     );
   }
@@ -266,12 +269,12 @@ class UIComponents {
       decoration: BoxDecoration(
         color:
             backgroundColor ??
-            (isDark ? AppTheme.darkCardBackground : AppTheme.white),
+            (isDark ? AppColors.darkCardBackground : AppColors.white),
         borderRadius: borderRadius,
         boxShadow: [
           BoxShadow(
             color:
-                isDark ? AppTheme.darkShadowColor : AppTheme.lightShadowColor,
+                isDark ? AppColors.darkShadowColor : AppColors.lightShadowColor,
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -284,3 +287,6 @@ class UIComponents {
 
 /// Enum for SnackBar types
 enum SnackBarType { info, success, warning, error }
+
+
+

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../utils/app_theme.dart';
+import 'package:spending_income/utils/app_theme/index.dart';
 
 class TransactionsScreen extends StatelessWidget {
   const TransactionsScreen({super.key});
@@ -14,14 +14,17 @@ class TransactionsScreen extends StatelessWidget {
           Icon(
             Icons.swap_horiz_outlined,
             size: 64,
-            color: AppTheme.getPrimaryColor(isDark).withAlpha(128),
+            color: AppThemeHelpers.getPrimaryColor(isDark).withAlpha(128),
           ),
           const SizedBox(height: 24),
-          Text('Transactions', style: AppTheme.getSubheadingStyle(isDark)),
+          Text('Transactions', style: AppThemeHelpers.getSubheadingStyle(isDark)),
           const SizedBox(height: 8),
-          Text('Coming Soon', style: AppTheme.getBodyStyle(isDark)),
+          Text('Coming Soon', style: AppThemeHelpers.getBodyStyle(isDark)),
         ],
       ),
     );
   }
 } 
+
+
+
