@@ -10,14 +10,16 @@ class TransactionListItem extends StatelessWidget {
   final NumberFormat currencyFormat;
   final VoidCallback onTap;
   
-  // Category icons map
+  // Category icons map with fixed mappings for core categories
   static final Map<String, IconData> categoryIcons = {
     'Food & Dining': Icons.restaurant,
     'Transportation': Icons.directions_car,
+    'Transport': Icons.directions_car, // Add alias for Transportation
     'Housing': Icons.home,
     'Entertainment': Icons.movie,
-    'Utilities': Icons.power,
+    'Utilities': Icons.power_outlined, // Changed to better match image
     'Healthcare': Icons.medical_services,
+    'Health': Icons.medical_services, // Add alias for Healthcare
     'Shopping': Icons.shopping_bag,
     'Travel': Icons.flight,
     'Education': Icons.school,
@@ -40,22 +42,21 @@ class TransactionListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool isExpense = transaction.type == model.TransactionType.expense;
-    final String paymentMethod = transaction.vendorOrSource ?? 'Cash'; // Default to Cash
+    final String category = transaction.category ?? 'Other'; // Default to Other
     
-    // Get category icon
-    IconData categoryIcon = categoryIcons[transaction.category] ?? Icons.receipt;
+    // Get category icon or default to receipt icon if not found
+    // Force refresh issue - standardize the category name to check
+    final String normalizedCategory = _normalizeCategory(category);
+    final IconData categoryIcon = categoryIcons[normalizedCategory] ?? Icons.receipt;
     
-    // Determine icon background color based on category
-    Color iconBgColor;
-    if (transaction.category == 'Food & Dining') {
-      iconBgColor = Colors.orange.withOpacity(0.2);
-    } else if (transaction.category == 'Transportation') {
-      iconBgColor = Colors.purple.withOpacity(0.2);
-    } else if (transaction.category == 'Shopping') {
-      iconBgColor = Colors.pink.withOpacity(0.2);
-    } else {
-      iconBgColor = Colors.blue.withOpacity(0.2);
-    }
+    // Get category color from theme system
+    final Color iconColor = AppThemeHelpers.getCategoryColor(isDark, category);
+    final Color iconBgColor = iconColor.withOpacity(0.2);
+    
+    // Use accent colors for expense/income indication
+    final Color amountColor = transaction.type == model.TransactionType.expense
+      ? AppThemeHelpers.getAccentRed(isDark) // Use red accent for expenses
+      : AppThemeHelpers.getAccentGreen(isDark); // Use green accent for income
     
     return InkWell(
       onTap: onTap,
@@ -73,7 +74,7 @@ class TransactionListItem extends StatelessWidget {
               ),
               child: Icon(
                 categoryIcon,
-                color: iconBgColor.withOpacity(1),
+                color: iconColor,
                 size: 24,
               ),
             ),
@@ -88,7 +89,10 @@ class TransactionListItem extends StatelessWidget {
                     transaction.description,
                     style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                       fontWeight: FontWeight.w600,
+                      color: AppThemeHelpers.getPrimaryColor(isDark),
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -103,7 +107,10 @@ class TransactionListItem extends StatelessWidget {
               ),
             ),
             
-            // Amount and payment method
+            // Add padding between description and amount
+            const SizedBox(width: 16),
+            
+            // Amount and category
             Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
@@ -111,18 +118,17 @@ class TransactionListItem extends StatelessWidget {
                   currencyFormat.format(transaction.amount),
                   style: AppThemeHelpers.getBodyStyle(isDark).copyWith(
                     fontWeight: FontWeight.w600,
-                    color: isExpense 
-                        ? const Color(0xFFE57373) // Light red for expenses
-                        : const Color(0xFF81C784), // Light green for income
+                    color: amountColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  paymentMethod,
+                  category,
                   style: AppThemeHelpers.getSmallStyle(isDark).copyWith(
                     color: isDark
                         ? AppColors.darkSecondaryText
                         : AppColors.lightSecondaryText,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -131,5 +137,18 @@ class TransactionListItem extends StatelessWidget {
         ),
       ),
     );
+  }
+  
+  // Helper to normalize category names for icon lookup
+  String _normalizeCategory(String category) {
+    // Handle possible alternate forms/variations of category names
+    switch (category.toLowerCase()) {
+      case 'health':
+        return 'Healthcare';
+      case 'transport':
+        return 'Transportation';
+      default:
+        return category;
+    }
   }
 } 

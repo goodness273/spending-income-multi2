@@ -145,10 +145,10 @@ class ExpenseChart extends StatelessWidget {
               BarChartRodData(
                 toY: amount,
                 color: isHighlighted 
-                    ? const Color(0xFFFFC107) // Gold/Yellow for highlight
+                    ? AppThemeHelpers.getAccentRed(isDark)
                     : isDark 
-                        ? Colors.blueGrey.shade200 
-                        : Colors.blueGrey.shade100,
+                        ? AppThemeHelpers.getPrimaryColor(isDark).withOpacity(0.7)
+                        : AppThemeHelpers.getPrimaryColor(isDark).withOpacity(0.5),
                 width: 20,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(6),

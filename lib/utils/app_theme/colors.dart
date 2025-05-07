@@ -18,6 +18,8 @@ class AppColors {
   static const Color accentYellowDark = Color(0xFFFFD04B);
   static const Color accentGreen = Color(0xFF22C55E);
   static const Color accentGreenDark = Color(0xFF4ADE80);
+  static const Color accentRed = Color(0xFFE53935);
+  static const Color accentRedDark = Color(0xFFEF5350);
   
   // Primary color reference for themes
   static const Color lightPrimaryAction = primaryBlack;
@@ -64,4 +66,43 @@ class AppColors {
     Color(0xFFFB923C),
     Color(0xFFD8B4FE),
   ];
+  
+  // Category-specific colors
+  static const Map<String, Color> lightCategoryColors = {
+    'Food & Dining': Color(0xFFFF9800),      // Orange
+    'Transportation': Color(0xFF9C27B0),     // Purple
+    'Transport': Color(0xFF9C27B0),          // Purple (alias for Transportation)
+    'Housing': Color(0xFF009688),            // Teal
+    'Entertainment': Color(0xFFE91E63),      // Pink
+    'Utilities': Color(0xFF2196F3),          // Blue
+    'Healthcare': Color(0xFF4CAF50),         // Green
+    'Health': Color(0xFF4CAF50),             // Green (alias for Healthcare)
+    'Shopping': Color(0xFFFF5722),           // Deep Orange
+    'Travel': Color(0xFF3F51B5),             // Indigo
+    'Education': Color(0xFF795548),          // Brown
+    'Salary': Color(0xFF4CAF50),             // Green
+    'Business': Color(0xFF607D8B),           // Blue Grey
+    'Investment': Color(0xFFFFC107),         // Amber
+    'Gifts': Color(0xFFE53935),              // Red
+    'Other': Color(0xFF9E9E9E),              // Grey
+  };
+  
+  static const Map<String, Color> darkCategoryColors = {
+    'Food & Dining': Color(0xFFFFB74D),      // Light Orange
+    'Transportation': Color(0xFFCE93D8),     // Light Purple
+    'Transport': Color(0xFFCE93D8),          // Light Purple (alias for Transportation)
+    'Housing': Color(0xFF80CBC4),            // Light Teal
+    'Entertainment': Color(0xFFF48FB1),      // Light Pink
+    'Utilities': Color(0xFF90CAF9),          // Light Blue
+    'Healthcare': Color(0xFFA5D6A7),         // Light Green
+    'Health': Color(0xFFA5D6A7),             // Light Green (alias for Healthcare)
+    'Shopping': Color(0xFFFFAB91),           // Light Deep Orange
+    'Travel': Color(0xFF9FA8DA),             // Light Indigo
+    'Education': Color(0xFFBCAAA4),          // Light Brown
+    'Salary': Color(0xFFA5D6A7),             // Light Green
+    'Business': Color(0xFFB0BEC5),           // Light Blue Grey
+    'Investment': Color(0xFFFFE082),         // Light Amber
+    'Gifts': Color(0xFFEF9A9A),              // Light Red
+    'Other': Color(0xFFE0E0E0),              // Light Grey
+  };
 } 

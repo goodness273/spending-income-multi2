@@ -37,6 +37,19 @@ class AppThemeHelpers {
       
   static Color getAccentGreen(bool isDarkMode) =>
       isDarkMode ? AppColors.accentGreenDark : AppColors.accentGreen;
+      
+  static Color getAccentRed(bool isDarkMode) =>
+      isDarkMode ? AppColors.accentRedDark : AppColors.accentRed;
+      
+  // Category color helper
+  static Color getCategoryColor(bool isDarkMode, String category) {
+    final categoryMap = isDarkMode
+        ? AppColors.darkCategoryColors
+        : AppColors.lightCategoryColors;
+    
+    return categoryMap[category] ?? 
+        (isDarkMode ? AppColors.darkTertiaryText : AppColors.lightTertiaryText);
+  }
 
   // TextStyle helpers
   static TextStyle getHeadingStyle(bool isDarkMode) =>
