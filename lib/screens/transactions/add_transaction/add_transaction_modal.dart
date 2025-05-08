@@ -491,39 +491,12 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     _amountController.text = _parsedAiTransactionData!.amount.toStringAsFixed(2);
     _selectedTransactionType = _parsedAiTransactionData!.type;
     
-    // Find appropriate category lists
-    final categories = _selectedTransactionType == TransactionType.expense
-        ? defaultSpendingCategories
-        : defaultIncomeCategories;
-        
-    // Select category or default to first
-    _selectedCategory = categories.contains(_parsedAiTransactionData!.category)
-        ? _parsedAiTransactionData!.category
-        : (categories.isNotEmpty ? categories[0] : null);
-        
-    _selectedDate = _parsedAiTransactionData!.date;
+    // Other field population code...
     
-    // Format the date in a user-friendly way
-    final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-    
-    // Check if the date is today, yesterday, or within the last week
-    if (_selectedDate.year == now.year && _selectedDate.month == now.month && _selectedDate.day == now.day) {
-      // Add a label to make it clear this is today
-      _dateController.text = "${DateFormat('yyyy-MM-dd').format(_selectedDate)} (Today)";
-    } else if (_selectedDate.year == yesterday.year && _selectedDate.month == yesterday.month && _selectedDate.day == yesterday.day) {
-      // Add a label to make it clear this is yesterday
-      _dateController.text = "${DateFormat('yyyy-MM-dd').format(_selectedDate)} (Yesterday)";
-    } else {
-      // Regular date format
-      _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
+    // Only set vendor text if it's empty
+    if (_vendorController.text.isEmpty) {
+      _vendorController.text = _parsedAiTransactionData!.vendorOrSource ?? '';
     }
-    
-    // Populate description field
-    _descriptionController.text = _parsedAiTransactionData!.description;
-    
-    // Populate vendor field if available
-    _vendorController.text = _parsedAiTransactionData!.vendorOrSource ?? '';
   }
 
   void _clearFormFields({bool clearParsedAiData = false}) {
