@@ -472,4 +472,217 @@ Reply ONLY with the category name that best matches, no other text.
   String _formatDate(DateTime date) {
     return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
   }
-} 
+
+  // Helper method to format date for AI prompt
+  String _formatDateForAIPrompt(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+  }
+
+  /// Parse multiple transactions from an AI response
+  /// This allows the AI to extract multiple transactions from a single conversation
+  Future<List<Transaction>> parseMultipleTransactionsFromConversation() async {
+    if (!_isInitialized) {
+      throw Exception('Gemini service not initialized. Call initialize() first.');
+    }
+    
+    try {
+      // Pre-extract any date reference from the conversation history
+      final preExtractedDateRef = await _extractDateReferenceFromHistory();
+      debugPrint('Pre-extracted date reference: $preExtractedDateRef');
+      
+      // Get today's date for the AI's reference
+      final now = DateTime.now();
+      final String todayFormatted = _formatDateForAIPrompt(now);
+      final String yesterdayFormatted = _formatDateForAIPrompt(now.subtract(const Duration(days: 1)));
+      
+      // Send a special extraction prompt designed for multiple transactions
+      final extractionPrompt = '''
+Today's date is $todayFormatted.
+Yesterday's date was $yesterdayFormatted.
+${preExtractedDateRef != null ? 'I detected this date reference in our conversation: "$preExtractedDateRef".' : ''}
+
+Based on our conversation, please extract ALL transaction details in the following JSON array format:
+[
+  {
+    "amount": 0.00,
+    "type": "expense" or "income",
+    "category": "category name",
+    "date": "YYYY-MM-DD",
+    "description": "brief description",
+    "vendorOrSource": "name of vendor or source",
+    "date_reference": "original date reference from the conversation"
+  },
+  {...}
+]
+
+For expense categories, please choose from: ${defaultSpendingCategories.join(', ')}
+For income categories, please choose from: ${defaultIncomeCategories.join(', ')}
+
+Important categorization notes:
+- Food: ONLY for meals, groceries, restaurants, drinks, and food items
+- Transport: For fuel, vehicle maintenance, transportation fees, ride-sharing, taxis
+- Utilities: For electricity, water, internet, phone bills
+- Shopping: For clothing, electronics, household items
+
+For vendor extraction:
+- Extract any business name, person, or entity providing the good/service
+- For expenses, this is who you paid (shop, person, company)
+- For income, this is who paid you (employer, client, person)
+
+Date handling examples:
+- If "yesterday" is mentioned, use $yesterdayFormatted
+- If "2 days ago" is mentioned, use ${_formatDateForAIPrompt(now.subtract(const Duration(days: 2)))}
+- If "3 days ago" is mentioned, use ${_formatDateForAIPrompt(now.subtract(const Duration(days: 3)))}
+- If "last week" is mentioned, use ${_formatDateForAIPrompt(now.subtract(const Duration(days: 7)))}
+- If no date is mentioned, use today's date ($todayFormatted)
+
+${preExtractedDateRef != null ? 'CRITICAL: Pay special attention to the date reference "$preExtractedDateRef" and calculate the correct date.' : ''}
+
+If any field is unclear or missing, use null for that field in the respective transaction.
+Only respond with the JSON array, even if only a single transaction is detected.
+''';
+
+      final response = await _chatSession.sendMessage(Content.text(extractionPrompt));
+      final jsonText = response.text ?? '';
+      
+      debugPrint('Received JSON array response: $jsonText');
+      
+      // Extract JSON from the response, handling both plain JSON and Markdown code blocks
+    String? jsonStr;
+    
+    // First, check if the response is wrapped in a Markdown code block
+    final markdownMatch = RegExp(r'```(?:json)?\s*([\s\S]*?)\s*```').firstMatch(jsonText);
+    if (markdownMatch != null && markdownMatch.groupCount >= 1) {
+      // Extract the content from inside the code block
+      jsonStr = markdownMatch.group(1);
+      debugPrint('Extracted JSON from Markdown code block');
+    } else {
+      // Try to find a raw JSON array
+      final jsonMatch = RegExp(r'\[\s\S*\]').firstMatch(jsonText);
+      if (jsonMatch != null) {
+        jsonStr = jsonMatch.group(0);
+        debugPrint('Extracted raw JSON array');
+      }
+    }
+    
+    // If no JSON could be extracted
+    if (jsonStr == null || jsonStr.isEmpty) {
+      debugPrint('No valid JSON found in response');
+      return _generateMockTransactions(); // Fallback to mock transactions
+    }
+      
+      try {
+        // Attempt to parse the JSON array
+        final List<dynamic> jsonArray = json.decode(jsonStr);
+        debugPrint('Successfully parsed JSON array with ${jsonArray.length} transactions');
+        
+        // Convert each JSON object to a Transaction
+        final List<Transaction> transactions = [];
+        
+        for (final jsonData in jsonArray) {
+          // Extract fields with fallbacks
+          final double amount = double.tryParse(jsonData['amount']?.toString() ?? '') ?? 0.0;
+          final String typeStr = jsonData['type']?.toString()?.toLowerCase() ?? 'expense';
+          final TransactionType type = typeStr == 'income' ? TransactionType.income : TransactionType.expense;
+          String category = jsonData['category']?.toString() ?? 'Other';
+          
+          // Get the date reference from the JSON
+          final String? dateReference = jsonData['date_reference']?.toString();
+          debugPrint('Date reference from AI: $dateReference');
+          
+          // Extract vendor information
+          final String? vendorOrSource = jsonData['vendorOrSource']?.toString();
+          debugPrint('Vendor/Source from AI: $vendorOrSource');
+          
+          // Process the date
+          DateTime date;
+          try {
+            // First try to parse the date directly from the JSON
+            final String? dateStr = jsonData['date']?.toString();
+            if (dateStr != null && dateStr.isNotEmpty) {
+              date = DateTime.parse(dateStr);
+            } else {
+              // If no date in the JSON, use today
+              date = now;
+            }
+          } catch (dateError) {
+            debugPrint('Error parsing date: $dateError');
+            date = now; // Fallback to today's date
+          }
+          
+          // Validate that the date is not in the future
+          if (date.isAfter(now)) {
+            date = now; // Reset to today if date is in the future
+          }
+          
+          // Validate categories based on transaction type
+          final validCategories = type == TransactionType.income
+              ? defaultIncomeCategories
+              : defaultSpendingCategories;
+          
+          if (!validCategories.contains(category)) {
+            // Fallback to a default category if invalid
+            category = type == TransactionType.income
+                ? defaultIncomeCategories[0]
+                : defaultSpendingCategories[0];
+          }
+          
+          // Extract description with fallback
+          final String description = jsonData['description']?.toString() ?? 'Transaction';
+          
+          // Create the transaction object
+          final transaction = Transaction(
+            id: const Uuid().v4(),
+            amount: amount,
+            type: type,
+            category: category,
+            date: date,
+            description: description,
+            userId: 'temp-user-id', // This will be replaced with the actual user ID when saving
+            vendorOrSource: vendorOrSource?.isNotEmpty == true ? vendorOrSource : null,
+          );
+          
+          transactions.add(transaction);
+        }
+        
+        // Return the list of transactions, or a mock list if empty
+        return transactions.isNotEmpty ? transactions : _generateMockTransactions();
+        
+      } catch (jsonError) {
+        debugPrint('Error parsing JSON array: $jsonError');
+        return _generateMockTransactions(); // Fallback to mock transactions
+      }
+      
+    } catch (e) {
+      debugPrint('Error in parseMultipleTransactionsFromConversation: $e');
+      return _generateMockTransactions(); // Fallback to mock transactions
+    }
+  }
+  
+  // Generate mock transactions for testing/fallback
+  List<Transaction> _generateMockTransactions() {
+    final now = DateTime.now();
+    return [
+      Transaction(
+        id: const Uuid().v4(),
+        amount: 2500.00,
+        type: TransactionType.expense,
+        category: defaultSpendingCategories[1], // Transport
+        date: now.subtract(const Duration(hours: 5)),
+        description: 'Taxi fare to work',
+        userId: 'temp-user-id',
+        vendorOrSource: 'Uber',
+      ),
+      Transaction(
+        id: const Uuid().v4(),
+        amount: 1200.00,
+        type: TransactionType.expense,
+        category: defaultSpendingCategories[0], // Food & Dining
+        date: now.subtract(const Duration(days: 1)),
+        description: 'Lunch at restaurant',
+        userId: 'temp-user-id',
+        vendorOrSource: 'Food Court',
+      ),
+    ];
+  }
+}

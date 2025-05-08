@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:spending_income/utils/app_theme/index.dart';
 import '../../providers/auth_provider.dart';
-import '../transactions/add_transaction/multi_transaction_test.dart';
 
 /// Placeholder screen for the Profile section.
 class ProfileScreen extends ConsumerWidget {
@@ -26,30 +25,6 @@ class ProfileScreen extends ConsumerWidget {
           const SizedBox(height: 8),
           Text('Coming Soon', style: AppThemeHelpers.getBodyStyle(isDark)),
           const SizedBox(height: 40),
-          // Test button for multi-transaction feature
-          SizedBox(
-            width: 240,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                showMultiTransactionTest(context);
-              },
-              icon: const Icon(Icons.list_alt_outlined, size: 18),
-              label: const Text('Test Multi-Transaction'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: isDark
-                    ? AppColors.accentGreenDark
-                    : AppColors.accentGreen,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-          
-          const SizedBox(height: 16),
           
           // Sign out button
           SizedBox(

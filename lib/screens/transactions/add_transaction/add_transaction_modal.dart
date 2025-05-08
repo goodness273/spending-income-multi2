@@ -4,11 +4,22 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:spending_income/models/transaction.dart';
 import 'package:spending_income/screens/transactions/add_transaction/ai_chat_interface.dart';
 import 'package:spending_income/screens/transactions/add_transaction/manual_form_interface.dart';
+import 'package:spending_income/screens/transactions/add_transaction/multi_transaction_standalone.dart';
 import 'package:spending_income/screens/transactions/add_transaction/transaction_method_selector.dart';
 import 'package:spending_income/screens/transactions/add_transaction/transaction_models.dart';
 import 'package:spending_income/services/gemini_service.dart';
 import 'package:spending_income/utils/app_theme/helpers.dart';
+import 'package:spending_income/utils/constants.dart';
 import 'package:uuid/uuid.dart';
+
+/// The different views within the add transaction modal
+enum ModalView {
+  aiChat,              // Chat with AI to extract transaction
+  aiReview,            // Review AI-extracted transaction before saving
+  multiTransactions,   // Review multiple transactions extracted by AI
+  manualForm,          // Manual transaction form
+  methodSelection,     // Method selection view
+}
 
 class AddTransactionModal extends StatefulWidget {
   final Function(Transaction) onTransactionAdded;
@@ -64,7 +75,12 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
   final List<Map<String, String>> _chatMessages = [];
   int _aiInteractionCount = 0;
   bool _isAiProcessing = false;
+  
+  // The transaction that was parsed from the AI conversation
   Transaction? _parsedAiTransactionData;
+  
+  // List of transactions when AI detects multiple transactions
+  List<Transaction> _parsedMultiTransactions = [];
   
   // Gemini Service
   final GeminiService _geminiService = GeminiService();
@@ -148,7 +164,6 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
 
   @override
   Widget build(BuildContext context) {
-    // final bottomPadding = MediaQuery.of(context).viewInsets.bottom; // No longer needed here
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
     return SafeArea(
@@ -259,6 +274,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             );
           }
           break;
+        case ModalView.multiTransactions:
+          content = _buildMultiTransactionInterface();
+          break;
         case ModalView.manualForm:
         default:
           content = ManualFormInterface(
@@ -278,7 +296,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       }
     }
 
-    // Wrap in a Card with clear bounds and no extra scrolling
+    // Wrap in a Container with clear bounds and no extra scrolling
     return Container(
       decoration: BoxDecoration(
         color: AppThemeHelpers.getCardColor(isDarkMode),
@@ -289,6 +307,44 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         padding: const EdgeInsets.all(16.0),
         child: content,
       ),
+    );
+  }
+
+  // Build the multi-transaction interface
+  Widget _buildMultiTransactionInterface() {
+    return MultiTransactionStandalone(
+      transactions: _parsedMultiTransactions,
+      // When user confirms transactions, add them all
+      onTransactionsConfirmed: (transactions) {
+        for (final transaction in transactions) {
+          widget.onTransactionAdded(transaction);
+        }
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppStrings.transactionsSaved.replaceFirst('%d', transactions.length.toString())),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      },
+      // When the user cancels, go back to AI chat
+      onCancelReview: () {
+        setState(() {
+          _currentModalView = ModalView.aiChat;
+        });
+      },
+      // When all transactions are removed
+      onAllTransactionsRemoved: () {
+        setState(() {
+          _currentModalView = ModalView.aiChat;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(AppStrings.allTransactionsRemoved),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      },
     );
   }
 
@@ -389,6 +445,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             _parsedAiTransactionData = transaction;
             _currentModalView = ModalView.aiReview;
           });
+          
+          // Also attempt to parse multiple transactions
+          _attemptToParseMultipleTransactions();
         } else {
           debugPrint('Failed to parse transaction data');
           // If we've had multiple attempts and still can't parse, prompt the user
@@ -411,6 +470,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
               );
               _currentModalView = ModalView.aiReview;
             });
+            
+            // Also attempt to parse multiple transactions
+            _attemptToParseMultipleTransactions();
           }
         }
       }
@@ -430,13 +492,57 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     }
   }
   
-  // Keep the existing mock method for fallback
-  void _mockAiProcessing(String message) {
-    // Simulate AI processing
-    Future.delayed(const Duration(seconds: 1), () {
+  // Attempt to parse multiple transactions from the AI conversation
+  Future<void> _attemptToParseMultipleTransactions() async {
+    if (!mounted) return;
+    
+    setState(() {
+      _isAiProcessing = true;
+    });
+    
+    try {
+      // Use the new method to parse multiple transactions
+      final transactions = await _geminiService.parseMultipleTransactionsFromConversation();
+      
       if (!mounted) return;
       
+      if (transactions.isNotEmpty) {
+        debugPrint('Successfully parsed ${transactions.length} transactions');
+        
+        // Check if we have multiple transactions
+        if (transactions.length > 1) {
+          // Show the multi-transaction interface if we have multiple transactions
+          setState(() {
+            _parsedMultiTransactions = transactions;
+            _chatMessages.add({
+              'sender': 'ai',
+              'text': 'I found multiple transactions! Let me show them all for your review.'
+            });
+            _currentModalView = ModalView.multiTransactions;
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error parsing multiple transactions: $e');
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isAiProcessing = false;
+        });
+      }
+    }
+  }
+  
+  void _mockAiProcessing(String message) {
+    // Simulate AI processing time
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (!mounted) return;
+      
+      // Generate a mock response
+      final response = 'I understand you spent money on something. Can you please provide more details?';
+      
       setState(() {
+        _chatMessages.add({'sender': 'ai', 'text': response});
         _isAiProcessing = false;
         
         if (_aiInteractionCount == 1 && message.toLowerCase().contains('coffee')) {
@@ -449,7 +555,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             type: TransactionType.expense,
             category: 'Food',
             date: DateTime.now().subtract(const Duration(days: 1)),
-            description: 'Coffee (from AI)',
+            description: 'Coffee',
             userId: 'temp-user-id',
           );
           _currentModalView = ModalView.aiReview;
@@ -485,54 +591,43 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     });
   }
 
-  void _populateFormWithAiData() {
-    if (_parsedAiTransactionData == null) return;
-    
-    _amountController.text = _parsedAiTransactionData!.amount.toStringAsFixed(2);
-    _selectedTransactionType = _parsedAiTransactionData!.type;
-    
-    // Other field population code...
-    
-    // Only set vendor text if it's empty
-    if (_vendorController.text.isEmpty) {
-      _vendorController.text = _parsedAiTransactionData!.vendorOrSource ?? '';
-    }
-  }
-
+  // Clear form fields when switching between inputs
   void _clearFormFields({bool clearParsedAiData = false}) {
     _amountController.clear();
     _dateController.text = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    _selectedDate = DateTime.now();
     _descriptionController.clear();
     _vendorController.clear();
+    _selectedTransactionType = TransactionType.expense;
+    _selectedCategory = null;
     
-    setState(() {
-      _selectedTransactionType = TransactionType.expense;
-      _selectedCategory = null;
-      _selectedDate = DateTime.now();
-      
-      if (clearParsedAiData) {
-        _parsedAiTransactionData = null;
-      }
-    });
+    if (clearParsedAiData) {
+      _parsedAiTransactionData = null;
+    }
   }
 
-  // Method to populate form with existing transaction data
+  // Populate form fields for editing an existing transaction
   void _populateFormWithExistingTransaction() {
     final transaction = widget.initialTransaction!;
-    _selectedTransactionType = transaction.type;
     _amountController.text = transaction.amount.toString();
+    _dateController.text = DateFormat('yyyy-MM-dd').format(transaction.date);
     _selectedDate = transaction.date;
-    _dateController.text = DateFormat('yyyy-MM-dd').format(_selectedDate);
     _descriptionController.text = transaction.description;
+    _vendorController.text = transaction.vendorOrSource ?? '';
+    _selectedTransactionType = transaction.type;
     _selectedCategory = transaction.category;
-    
-    if (transaction.vendorOrSource != null) {
-      _vendorController.text = transaction.vendorOrSource!;
-    }
-    
-    // Always set current view to manual form when editing, regardless of original creation method
-    _currentInputMethod = TransactionInputMethod.manual;
-    _currentModalView = ModalView.manualForm;
+  }
+
+  // Populate form fields with AI-extracted data for review
+  void _populateFormWithAiData() {
+    final transaction = _parsedAiTransactionData!;
+    _amountController.text = transaction.amount.toString();
+    _dateController.text = DateFormat('yyyy-MM-dd').format(transaction.date);
+    _selectedDate = transaction.date;
+    _descriptionController.text = transaction.description;
+    _vendorController.text = transaction.vendorOrSource ?? '';
+    _selectedTransactionType = transaction.type;
+    _selectedCategory = transaction.category;
   }
 
   @override
@@ -544,6 +639,3 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     super.dispose();
   }
 }
-
-
-
