@@ -183,7 +183,8 @@ class _MultiTransactionStandaloneState extends State<MultiTransactionStandalone>
                           onTap: () {
                             setModalState(() {
                               selectedType = TransactionType.expense;
-                              if (!AppConstants.expenseCategories.contains(selectedCategory)) {
+                              // Ensure the selected category is valid for the new type
+                              if (!_getCategoryOptions(TransactionType.expense).contains(selectedCategory)) {
                                 selectedCategory = AppConstants.expenseCategories[0];
                               }
                             });
@@ -223,7 +224,8 @@ class _MultiTransactionStandaloneState extends State<MultiTransactionStandalone>
                           onTap: () {
                             setModalState(() {
                               selectedType = TransactionType.income;
-                              if (!AppConstants.incomeCategories.contains(selectedCategory)) {
+                              // Ensure the selected category is valid for the new type
+                              if (!_getCategoryOptions(TransactionType.income).contains(selectedCategory)) {
                                 selectedCategory = AppConstants.incomeCategories[0];
                               }
                             });
@@ -351,46 +353,57 @@ class _MultiTransactionStandaloneState extends State<MultiTransactionStandalone>
                   
                   SizedBox(height: AppConstants.spacingMedium),
                   
-                  // Category dropdown
-                  DropdownButtonFormField<String>(
-                    value: selectedCategory,
-                    decoration: InputDecoration(
-                      labelText: 'Category',
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                    ),
-                    dropdownColor: isDarkMode ? AppColors.darkCardBackground : AppColors.white,
-                    icon: Icon(
-                      Icons.arrow_drop_down_outlined, // Using outlined variant per user preference
-                      color: isDarkMode ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
-                    ),
-                    style: TextStyle(
-                      color: isDarkMode ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
-                      fontSize: 16,
-                    ),
-                    itemHeight: 48,
-                    borderRadius: BorderRadius.circular(12),
-                    hint: const Text('Select a category'),
-                    items: _getCategoryOptions(selectedType).map((String category) {
-                      return DropdownMenuItem<String>(
-                        value: category,
-                        child: Text(category),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setModalState(() {
-                          selectedCategory = newValue;
-                        });
-                      }
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please select a category';
-                      }
-                      return null;
-                    },
-                  ),
+                  // Category dropdown - completely rebuilt to avoid duplicate values
+                  Builder(builder: (context) {
+                    // Get the current categories without duplicates
+                    final categories = _getCategoryOptions(selectedType);
+                    
+                    // Make sure selectedCategory exists in the list
+                    // If not, default to the first category
+                    if (!categories.contains(selectedCategory)) {
+                      selectedCategory = categories.isNotEmpty ? categories.first : '';
+                    }
+                    
+                    return DropdownButtonFormField<String>(
+                      value: selectedCategory,
+                      decoration: InputDecoration(
+                        labelText: 'Category',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      ),
+                      dropdownColor: isDarkMode ? AppColors.darkCardBackground : AppColors.white,
+                      icon: Icon(
+                        Icons.arrow_drop_down_outlined, // Using outlined variant per user preference
+                        color: isDarkMode ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                      ),
+                      style: TextStyle(
+                        color: isDarkMode ? AppColors.darkPrimaryText : AppColors.lightPrimaryText,
+                        fontSize: 16,
+                      ),
+                      itemHeight: 48,
+                      borderRadius: BorderRadius.circular(12),
+                      hint: const Text('Select a category'),
+                      items: categories.map((String category) {
+                        return DropdownMenuItem<String>(
+                          value: category,
+                          child: Text(category),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        if (newValue != null) {
+                          setModalState(() {
+                            selectedCategory = newValue;
+                          });
+                        }
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please select a category';
+                        }
+                        return null;
+                      },
+                    );
+                  }),
                   
                   SizedBox(height: AppConstants.spacingMedium),
                   
@@ -512,10 +525,17 @@ class _MultiTransactionStandaloneState extends State<MultiTransactionStandalone>
   
   // Get category options based on transaction type
   List<String> _getCategoryOptions(TransactionType type) {
+    List<String> categories;
+    
     if (type == TransactionType.income) {
-      return AppConstants.incomeCategories;
+      // Create a new list to avoid modifying the original
+      categories = List<String>.from(AppConstants.incomeCategories);
     } else {
-      return AppConstants.expenseCategories;
+      // Create a new list to avoid modifying the original
+      categories = List<String>.from(AppConstants.expenseCategories);
     }
+    
+    // Ensure categories are unique by converting to a Set and back to List
+    return categories.toSet().toList();
   }
 }
