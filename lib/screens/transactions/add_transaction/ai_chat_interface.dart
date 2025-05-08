@@ -196,9 +196,25 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
   }
 
   Widget _buildMessageBubble(String message, bool isUser, bool isDarkMode) {
-    // Check if this is a JSON message and hide it from the user
-    if (!isUser && (message.trim().startsWith('{') || message.trim().startsWith('```json'))) {
-      return const SizedBox.shrink(); // Don't show raw JSON in the chat
+    // Check if this is a JSON message or Gemini thinking text and hide it from the user
+    if (!isUser) {
+      // Hide raw JSON or code blocks
+      if (message.trim().startsWith('{') || message.trim().startsWith('```json')) {
+        return const SizedBox.shrink(); // Don't show raw JSON in the chat
+      }
+      
+      // Hide Gemini's thinking text (which often includes calculation steps, summaries, etc.)
+      if (message.contains('**Summary:**') || 
+          message.contains('*Total') || 
+          message.contains('=') || 
+          message.contains('Naira**') ||
+          message.contains('***') ||
+          message.contains('```') ||
+          message.trim().startsWith('*') && (message.contains('earned') || message.contains('spent'))) {
+        // Don't add this thinking text to the chat view
+        // The loading indicator will be shown instead (handled in the build method)
+        return const SizedBox.shrink();
+      }
     }
     
     return Container(
