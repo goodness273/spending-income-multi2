@@ -327,15 +327,31 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
           ),
         );
       },
-      // When the user cancels, go back to AI chat
+      // When the user cancels, clear all data and reset to fresh AI chat
       onCancelReview: () {
         setState(() {
+          // Clear all parsed transaction data
+          _parsedMultiTransactions = [];
+          _parsedAiTransactionData = null;
+          _aiInteractionCount = 0;
+          _chatMessages.clear();
+          _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+          
+          // Reset to chat view
           _currentModalView = ModalView.aiChat;
         });
       },
       // When all transactions are removed
       onAllTransactionsRemoved: () {
         setState(() {
+          // Clear all parsed transaction data
+          _parsedMultiTransactions = [];
+          _parsedAiTransactionData = null;
+          _aiInteractionCount = 0;
+          _chatMessages.clear();
+          _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+          
+          // Reset to chat view
           _currentModalView = ModalView.aiChat;
         });
         ScaffoldMessenger.of(context).showSnackBar(
@@ -353,9 +369,9 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       _currentInputMethod = method;
       
       if (method == TransactionInputMethod.aiChat) {
-        // Preserve the context based on where we're coming from
-        if (_currentModalView == ModalView.multiTransactions && _parsedMultiTransactions.isNotEmpty) {
-          // Coming from multi-transaction view - preserve the multi-transaction view
+        // Check if we have multiple transactions first and prioritize that
+        if (_parsedMultiTransactions.isNotEmpty) {
+          // If we have multiple transactions, always show the multi-transaction view
           _currentModalView = ModalView.multiTransactions;
         } else if (_parsedAiTransactionData != null) {
           // Coming from single-transaction view - preserve the single review form
