@@ -352,18 +352,27 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
     setState(() {
       _currentInputMethod = method;
       
-      // Preserve the review form if we have parsed transaction data
-      if (_parsedAiTransactionData != null && method == TransactionInputMethod.aiChat) {
-        _currentModalView = ModalView.aiReview;
-      } else {
-        _currentModalView = method == TransactionInputMethod.aiChat ? ModalView.aiChat : ModalView.manualForm;
-        _aiInteractionCount = 0;
-        
-        // Don't clear chat messages if already present
-        if (_currentModalView == ModalView.aiChat && _chatMessages.isEmpty) {
-          _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+      if (method == TransactionInputMethod.aiChat) {
+        // Preserve the context based on where we're coming from
+        if (_currentModalView == ModalView.multiTransactions && _parsedMultiTransactions.isNotEmpty) {
+          // Coming from multi-transaction view - preserve the multi-transaction view
+          _currentModalView = ModalView.multiTransactions;
+        } else if (_parsedAiTransactionData != null) {
+          // Coming from single-transaction view - preserve the single review form
+          _currentModalView = ModalView.aiReview;
+        } else {
+          // Fresh AI chat session
+          _currentModalView = ModalView.aiChat;
+          _aiInteractionCount = 0;
+          
+          // Don't clear chat messages if already present
+          if (_chatMessages.isEmpty) {
+            _chatMessages.add({'sender': 'ai', 'text': 'Tell me about your transaction...\n(e.g., "Spent 5000 naira on fuel yesterday")'});
+          }
         }
-        
+      } else {
+        // Going to manual form
+        _currentModalView = ModalView.manualForm;
         _clearFormFields();
       }
     });
@@ -435,19 +444,22 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
         
         if (transaction != null) {
           debugPrint('Transaction parsed successfully: ${transaction.description}, ${transaction.amount}');
+          _parsedAiTransactionData = transaction;
           
-          // Add a final message before showing the form
-          setState(() {
-            _chatMessages.add({
-              'sender': 'ai', 
-              'text': 'I\'ve prepared your transaction details for review. Please check and confirm!'
+          // Before showing the single transaction view, check if we have multiple transactions
+          // This will store the single transaction in _parsedAiTransactionData for later use if needed
+          await _attemptToParseMultipleTransactions();
+          
+          // Only show the single transaction view if we haven't switched to multi-transaction view
+          if (_currentModalView != ModalView.multiTransactions && mounted) {
+            setState(() {
+              _chatMessages.add({
+                'sender': 'ai', 
+                'text': 'I\'ve prepared your transaction details for review. Please check and confirm!'
+              });
+              _currentModalView = ModalView.aiReview;
             });
-            _parsedAiTransactionData = transaction;
-            _currentModalView = ModalView.aiReview;
-          });
-          
-          // Also attempt to parse multiple transactions
-          _attemptToParseMultipleTransactions();
+          }
         } else {
           debugPrint('Failed to parse transaction data');
           // If we've had multiple attempts and still can't parse, prompt the user
@@ -468,11 +480,17 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
                 description: 'Transaction from chat',
                 userId: 'temp-user-id',
               );
-              _currentModalView = ModalView.aiReview;
             });
             
-            // Also attempt to parse multiple transactions
-            _attemptToParseMultipleTransactions();
+            // Try to parse multiple transactions outside the setState
+            await _attemptToParseMultipleTransactions();
+            
+            // Only show single transaction view if we didn't find multiple transactions
+            if (_currentModalView != ModalView.multiTransactions && mounted) {
+              setState(() {
+                _currentModalView = ModalView.aiReview;
+              });
+            }
           }
         }
       }
@@ -520,6 +538,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
             });
             _currentModalView = ModalView.multiTransactions;
           });
+          return; // Exit early - we're showing the multi-transaction view
         }
       }
     } catch (e) {
@@ -532,7 +551,7 @@ class _AddTransactionModalState extends State<AddTransactionModal> {
       }
     }
   }
-  
+
   void _mockAiProcessing(String message) {
     // Simulate AI processing time
     Future.delayed(const Duration(milliseconds: 800), () {
