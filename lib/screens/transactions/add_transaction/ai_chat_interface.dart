@@ -26,6 +26,20 @@ class AiChatInterface extends StatefulWidget {
 class _AiChatInterfaceState extends State<AiChatInterface> {
   final TextEditingController _chatController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  
+  // Character limit for input
+  static const int maxInputLength = 500;
+
+  @override
+  void initState() {
+    super.initState();
+    // Add listener to update UI when text changes (for character counter)
+    _chatController.addListener(() {
+      setState(() {
+        // Just to rebuild the UI when text changes
+      });
+    });
+  }
 
   @override
   void dispose() {
@@ -118,30 +132,57 @@ class _AiChatInterfaceState extends State<AiChatInterface> {
           ),
         ),
         
-        // Input area fixed at bottom
+        // Input area fixed at bottom with expanded TextField and character counter
         Container(
           padding: EdgeInsets.only(bottom: keyboardVisible ? 8 : 0),
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Expanded(
-                child: TextField(
-                  controller: _chatController,
-                  decoration: InputDecoration(
-                    hintText: 'Type your transaction...',
-                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
+              // Character counter
+              Padding(
+                padding: const EdgeInsets.only(bottom: 4.0),
+                child: Text(
+                  '${_chatController.text.length}/$maxInputLength',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: _chatController.text.length > maxInputLength * 0.8
+                      ? (_chatController.text.length >= maxInputLength ? Colors.red : Colors.orange)
+                      : Colors.grey,
                   ),
-                  onSubmitted: (_) => _handleSend(),
                 ),
               ),
-              const SizedBox(width: 8),
-              IconButton(
-                icon: const Icon(Icons.send),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppThemeHelpers.getPrimaryColor(isDarkMode),
-                  foregroundColor: isDarkMode ? AppColors.primaryBlack : AppColors.white,
-                ),
-                onPressed: widget.isAiProcessing ? null : _handleSend,
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _chatController,
+                      decoration: InputDecoration(
+                        hintText: 'Type your transaction...',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10)
+                      ),
+                      // Make the TextField expand vertically
+                      maxLines: null,
+                      minLines: 1,
+                      // Limit input to max characters
+                      maxLength: maxInputLength,
+                      // Hide the default counter as we're showing our own
+                      buildCounter: (context, {required currentLength, required isFocused, maxLength}) => null,
+                      textInputAction: TextInputAction.newline,
+                      onSubmitted: (_) => _handleSend(),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.send_outlined), // Using outlined variant per user preference
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppThemeHelpers.getPrimaryColor(isDarkMode),
+                      foregroundColor: isDarkMode ? AppColors.primaryBlack : AppColors.white,
+                    ),
+                    onPressed: widget.isAiProcessing || _chatController.text.isEmpty ? null : _handleSend,
+                  ),
+                ],
               ),
             ],
           ),
