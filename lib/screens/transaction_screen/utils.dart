@@ -57,16 +57,63 @@ Map<String, double> groupTransactionsByMonth(List<model.Transaction> transaction
     result[monthName] = 0;
   }
   
-  // Sum up expenses by month
+  // Sum up totals by month for the provided transaction list
   for (final transaction in transactions) {
-    if (transaction.type == model.TransactionType.expense) {
-      final monthName = DateFormat('MMM').format(transaction.date);
-      result.update(monthName, (value) => value + transaction.amount, 
-                   ifAbsent: () => transaction.amount);
-    }
+    // The list is already filtered by the caller according to the current
+    // filter mode (all / expenses / income). Therefore we can safely include
+    // every transaction here so that both income and expense charts are
+    // populated with the correct figures.
+    final monthName = DateFormat('MMM').format(transaction.date);
+    result.update(monthName, (value) => value + transaction.amount,
+        ifAbsent: () => transaction.amount);
   }
   
   // Reverse to show chronological order (oldest to newest)
+  return Map.fromEntries(result.entries.toList().reversed);
+}
+
+/// Groups transactions by month and splits amounts into income and expense
+/// for use in a stacked bar chart.
+///
+/// Returned map structure:
+/// ```dart
+/// {
+///   'Jan': {'income': 2000.0, 'expense': 1500.0},
+///   'Feb': {'income': 1800.0, 'expense': 1200.0},
+///   ...
+/// }
+/// ```
+Map<String, Map<String, double>> groupTransactionsByMonthSplit(
+    List<model.Transaction> transactions) {
+  final Map<String, Map<String, double>> result = {};
+
+  // Pre-populate last 6 months with zeroes so bars are always present
+  final now = DateTime.now();
+  for (int i = 0; i < 6; i++) {
+    final month = now.month - i;
+    final year = now.year - (month <= 0 ? 1 : 0);
+    final adjustedMonth = month <= 0 ? month + 12 : month;
+
+    final monthName =
+        DateFormat('MMM').format(DateTime(year, adjustedMonth));
+    result[monthName] = {'income': 0.0, 'expense': 0.0};
+  }
+
+  // Aggregate amounts
+  for (final transaction in transactions) {
+    final monthName = DateFormat('MMM').format(transaction.date);
+    result.putIfAbsent(monthName, () => {'income': 0.0, 'expense': 0.0});
+
+    if (transaction.type == model.TransactionType.income) {
+      result[monthName]!['income'] =
+          result[monthName]!['income']! + transaction.amount;
+    } else if (transaction.type == model.TransactionType.expense) {
+      result[monthName]!['expense'] =
+          result[monthName]!['expense']! + transaction.amount;
+    }
+  }
+
+  // Return in chronological order (oldest -> newest)
   return Map.fromEntries(result.entries.toList().reversed);
 }
 
@@ -84,4 +131,4 @@ String mapTimeFilterToPeriod(String timeFilter) {
     default:
       return 'month'; // Default to month
   }
-} 
+}

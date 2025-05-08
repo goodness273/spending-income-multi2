@@ -154,9 +154,6 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
           // Filter transactions based on current mode
           final filteredTransactions = _filterTransactions(transactionsList);
 
-          // Get transactions grouped by month for chart
-          final groupedByMonth = groupTransactionsByMonth(filteredTransactions);
-          
           // Calculate total for header
           final totalAmount = _calculateTotal(filteredTransactions);
           
@@ -168,7 +165,7 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
                   padding: EdgeInsets.zero,
                   children: [
                     // Expense chart section
-                    _buildExpenseCard(groupedByMonth, totalAmount, isDark),
+                    _buildExpenseCard(filteredTransactions, totalAmount, isDark),
                     
                     // Add spacing between chart and transaction list
                     const SizedBox(height: 16),
@@ -277,7 +274,7 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
     );
   }
 
-  Widget _buildExpenseCard(Map<String, double> groupedByMonth, double totalAmount, bool isDark) {
+  Widget _buildExpenseCard(List<model.Transaction> transactions, double totalAmount, bool isDark) {
     String label;
     Color amountColor;
     
@@ -340,7 +337,15 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
           const SizedBox(height: 20),
           SizedBox(
             height: 160,
-            child: _buildBarChart(groupedByMonth, isDark),
+            child: () {
+              // Decide chart type based on current filter mode
+              if (_currentFilterMode == FilterMode.all) {
+                final detailed = groupTransactionsByMonthSplit(transactions);
+                return _buildStackedBarChart(detailed, isDark);
+              }
+              final grouped = groupTransactionsByMonth(transactions);
+              return _buildBarChart(grouped, isDark);
+            }(),
           ),
         ],
       ),
@@ -419,16 +424,6 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
         ? 100 
         : monthlyData.values.reduce((a, b) => a > b ? a : b);
     
-    // Modern color palette
-    final List<Color> barColors = [
-      AppThemeHelpers.getPrimaryColor(isDark),
-      AppThemeHelpers.getPrimaryColor(isDark),
-      AppThemeHelpers.getPrimaryColor(isDark),
-      AppThemeHelpers.getPrimaryColor(isDark),
-      AppThemeHelpers.getPrimaryColor(isDark),
-      AppThemeHelpers.getPrimaryColor(isDark),
-    ];
-    
     return GestureDetector(
       onTapUp: (details) {
         // Clear the selected bar when tapping elsewhere
@@ -475,12 +470,17 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
             final String month = months[index];
             final double amount = monthlyData[month] ?? 0;
             
+            // For Income and Expenses tabs we show a single-color bar.
+            // Black in light theme, white in dark theme.
+            // (The "All" tab uses a stacked chart handled elsewhere.)
+            final Color barColor = isDark ? Colors.white : Colors.black;
+
             return BarChartGroupData(
               x: index,
               barRods: [
                 BarChartRodData(
                   toY: amount,
-                  color: AppThemeHelpers.getPrimaryColor(isDark),
+                  color: barColor,
                   width: 28,
                   borderRadius: const BorderRadius.vertical(
                     top: Radius.circular(6),
@@ -528,6 +528,81 @@ class _TransactionScreenState extends ConsumerState<TransactionScreen> {
             },
           ),
         ),
+      ),
+    );
+  }
+
+  /// Builds a stacked bar chart (income vs. expenses) for the "All" filter mode.
+  Widget _buildStackedBarChart(
+      Map<String, Map<String, double>> monthlyData, bool isDark) {
+    final months = monthlyData.keys.toList();
+
+    // Determine max combined amount for y-axis
+    final maxAmount = monthlyData.values.isEmpty
+        ? 100
+        : monthlyData.values
+            .map((m) => (m['income'] ?? 0) + (m['expense'] ?? 0))
+            .reduce((a, b) => a > b ? a : b);
+
+    return BarChart(
+      BarChartData(
+        alignment: BarChartAlignment.spaceAround,
+        maxY: maxAmount * 1.3,
+        borderData: FlBorderData(show: false),
+        titlesData: FlTitlesData(
+          show: true,
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value.toInt() >= 0 && value.toInt() < months.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(
+                      months[value.toInt()],
+                      style: AppThemeHelpers.getSmallStyle(isDark),
+                    ),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+              reservedSize: 30,
+            ),
+          ),
+          leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        ),
+        barGroups: List.generate(months.length, (index) {
+          final month = months[index];
+          final income = monthlyData[month]?['income'] ?? 0;
+          final expense = monthlyData[month]?['expense'] ?? 0;
+
+          final Color incomeColor = isDark ? Colors.white : Colors.black;
+          final Color expenseColor = isDark
+              ? Colors.grey.shade600
+              : Colors.grey.shade400;
+
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: income + expense,
+                rodStackItems: [
+                  BarChartRodStackItem(0, income, incomeColor),
+                  BarChartRodStackItem(
+                    income,
+                    income + expense,
+                    expenseColor,
+                  ),
+                ],
+                width: 28,
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(6)),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
